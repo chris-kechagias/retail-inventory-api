@@ -79,8 +79,7 @@ def get_all_products():
     response_model=Product,
     summary="Retrieve a single product by its unique ID",
 )
-def get_product(product_id: int):
-    """
+def get_product(product_id: int) -> Product: """
     GET /products/{product_id}
     Returns a single product by its unique ID.
     """
