@@ -183,4 +183,27 @@ def update_product(product_id: int, update_data: ProductUpdate):
     return updated_product
 
 
-# will add delete endpoint here
+# ----------------------------------------------------
+# 5. Endpoints (DELETE Route)
+# ----------------------------------------------------
+
+
+@app.delete(
+    "/products/{product_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a product from the inventory",
+)
+def delete_product_endpoint(product_id: int):
+    """
+    ds
+    """
+    deleted = delete_product(product_id=product_id, inventory_data=INVENTORY_DATA)
+
+    if not deleted:
+        # Raise 404 if the product to delete was not found
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with ID {product_id} not found.",
+        )
+
+    return None  # 204 No Content does not return a body
