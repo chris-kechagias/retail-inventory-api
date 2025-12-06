@@ -61,32 +61,38 @@ def update_product_quantity(
     product_id: int, new_quantity: int, inventory_data: List[Dict[str, Any]]
 ) -> Optional[Dict[str, Any]]:
     """
-    ds
+    Updates the quantity of an existing product and saves the data.
+
+    Returns the updated product dictionary, or None if the product is
+    not found.
     """
     try:
-        # 1.
+        # Use a generator expression to find the product efficiently
         product_to_update = next(
             product for product in inventory_data if product["id"] == product_id
         )
-        #
+        # 1. Update the quantity
         product_to_update["quantity"] = new_quantity
 
-        # 2.
+        # 2. Update the in_stock status based on the new quantity
         product_to_update["in_stock"] = new_quantity > 0
 
-        # 3.
+        # 3. Persist the changes to the file
         save_products(inventory_data)
 
         return product_to_update
     except StopIteration:
+        # Product with the given ID was not found
         return None
 
 
 def delete_product(product_id: int, inventory_data: List[Dict[str, Any]]) -> bool:
     """
-    ds
+    Removes a product from the inventory list and saves the changes.
+
+    Returns True if the product was deleted, False otherwise.
     """
-    # 1.
+    # 1. Find the index of the product to delete
     product_index = -1
     for i, product in enumerate(inventory_data):
         if product["id"] == product_id:
@@ -94,10 +100,10 @@ def delete_product(product_id: int, inventory_data: List[Dict[str, Any]]) -> boo
             break
 
     if product_index != -1:
-        # 2.
+        # 2. Remove the product from the list by index
         inventory_data.pop(product_index)
 
-        # 3.
+        # 3. Persist the changes to the file
         save_products(inventory_data)
         return True
     return False
