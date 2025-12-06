@@ -4,8 +4,8 @@ Business Logic Layer (BLL) for the Retail API.
 Handles core operations like adding products
 """
 
-# from typing import List, Dict, Any -> test first then implement
 # from models import Product
+from typing import List, Dict, Any, Optional
 from inventory_io import save_products  # load_products,
 
 
@@ -57,4 +57,47 @@ def add_product(new_product_data: dict, inventory_data: list) -> dict:
     return product_to_add
 
 
-# Future functions like update_product_quantity can be added here
+def update_product_quantity(
+    product_id: int, new_quantity: int, inventory_data: List[Dict[str, Any]]
+) -> Optional[Dict[str, Any]]:
+    """
+    ds
+    """
+    try:
+        # 1.
+        product_to_update = next(
+            product for product in inventory_data if product["id"] == product_id
+        )
+        #
+        product_to_update["quantity"] = new_quantity
+
+        # 2.
+        product_to_update["in_stock"] = new_quantity > 0
+
+        # 3.
+        save_products(inventory_data)
+
+        return product_to_update
+    except StopIteration:
+        return None
+
+
+def delete_product(product_id: int, inventory_data: List[Dict[str, Any]]) -> bool:
+    """
+    ds
+    """
+    # 1.
+    product_index = -1
+    for i, product in enumerate(inventory_data):
+        if product["id"] == product_id:
+            product_index = i
+            break
+
+    if product_index != -1:
+        # 2.
+        inventory_data.pop(product_index)
+
+        # 3.
+        save_products(inventory_data)
+        return True
+    return False
