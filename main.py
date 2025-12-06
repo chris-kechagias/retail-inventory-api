@@ -236,7 +236,7 @@ def update_product(product_id: int, update_data: ProductUpdate):
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a product from the inventory",
 )
-def delete_product_endpoint(product_id: int):
+def delete_product_endpoint(product_id: int) -> None:
     """
     Deletes a product by its unique ID.
     Raises 404 if the product is not found.
