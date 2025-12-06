@@ -1,1 +1,9 @@
-[]
+[
+    {
+        "id": 1,
+        "name": "iPhone 15pro",
+        "price": 999.0,
+        "quantity": 5,
+        "in_stock": true
+    }
+]
