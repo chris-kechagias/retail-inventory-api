@@ -57,6 +57,14 @@ API Gateway: FastAPI application entry point.
 Defines the HTTP routes and acts as the Presentation Layer,
 connecting the client requests to the Business Logic (inventory_service).
 """
+# Initialize logging configuration
+import logger_config
+
+# Get logger instance for this module
+import logging
+
+logger = logging.getLogger(__name__)
+
 from typing import List, Dict, Any
 from fastapi import FastAPI, HTTPException, status
 
@@ -81,6 +89,15 @@ app = FastAPI(
 # Load the data once when the application starts.
 # This list (list[dict]) is the application's 'in-memory state'.
 INVENTORY_DATA: List[Dict[str, Any]] = load_products()
+
+
+# A simple log message to confirm startup
+@app.on_event("startup")
+def startup_event():
+    logger.info("Retail API Server Starting Up")
+    # Log the initial inventory size
+    logger.info(f"Initial inventory loaded with {len(INVENTORY_DATA)} products.")
+
 
 # ----------------------------------------------------
 # 2. Endpoints (GET Routes)

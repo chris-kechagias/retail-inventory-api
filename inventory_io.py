@@ -6,6 +6,10 @@ Handles all read and write operations directly with the products.json file.
 
 import json
 import os
+import logging
+
+# Get logger instance for this module
+logger = logging.getLogger(__name__)
 
 # Define the filename once
 INVENTORY_DATA = "products.json"
@@ -19,7 +23,9 @@ def load_products() -> list:
     This ensures the API always starts with a valid data structure.
     """
     if not os.path.exists(INVENTORY_DATA):
-        # File doesn't exist, start with an empty list
+        logger.warning(
+            f"Data file {INVENTORY_DATA} not found. Initializing with empty inventory."
+        )
         return []
     try:
         with open(INVENTORY_DATA, "r", encoding="utf-8") as f:
@@ -41,13 +47,13 @@ def load_products() -> list:
 
     except json.JSONDecodeError:
         # Handle case where file exists but content is invalid JSON
-        print(
-            f"Warning: Invalid JSON found in {INVENTORY_DATA}. Starting with empty inventory."
+        logger.error(
+            f"Invalid JSON found in {INVENTORY_DATA}. Starting with empty inventory."
         )
         return []
     # Catch other unexpected errors
     except Exception as e:
-        print(f"An unexpected error occurred while loading products: {e}")
+        logger.critical(f"Unexpected error during product loading: {e}", exc_info=True)
         return []
 
 
@@ -57,6 +63,10 @@ def save_products(products: list):
     Overwrites the existing file content to ensure data consistency.
     """
     # Use 'products: list' to enforce type hint for clarity
-    with open(INVENTORY_DATA, "w", encoding="utf-8") as f:
-        # ensure_ascii=False allows proper encoding of Greek/special chars
-        json.dump(products, f, indent=4, ensure_ascii=False)
+    try:
+        with open(INVENTORY_DATA, "w", encoding="utf-8") as f:
+            # ensure_ascii=False allows proper encoding of Greek/special chars
+            json.dump(products, f, indent=4, ensure_ascii=False)
+        logger.info(f"Successfully saved {len(products)} products to {INVENTORY_DATA}.")
+    except Exception as e:
+        logger.error(f"Failed to save products to {INVENTORY_DATA}: {e}", exc_info=True)
