@@ -26,5 +26,12 @@
         "price": 1879.0,
         "quantity": 4,
         "in_stock": true
+    },
+    {
+        "id": 5,
+        "name": "Logitech Mouse MX Master 3s Bluetooth Graphite",
+        "price": 99.0,
+        "quantity": 22,
+        "in_stock": true
     }
 ]

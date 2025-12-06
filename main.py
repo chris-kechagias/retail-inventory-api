@@ -43,12 +43,13 @@
 #    |--> Implement DELETE /products/{id} (deletes product, with
 #         error handling) --- Done
 #    |--> Implement GET /products/total_value (calculates total
-#         inventory value)
+#         inventory value) --- Done
 
 
 # Establishing Three-Tier Architecture
 #    |--> Presentation Layer: FastAPI endpoints (main.py) --- Done
-#    |--> Business Logic Layer: Inventory services (inventory_services.py) --- Done
+#    |--> Business Logic Layer: Inventory services
+#         (inventory_services.py) --- Done
 #    |--> Data Access Layer: File I/O operations (inventory_io.py) --- Done
 
 """
@@ -57,21 +58,35 @@ API Gateway: FastAPI application entry point.
 Defines the HTTP routes and acts as the Presentation Layer,
 connecting the client requests to the Business Logic (inventory_service).
 """
-# Initialize logging configuration
-import logger_config
-
-# Get logger instance for this module
+# Standard Library Imports
 import logging
-
-logger = logging.getLogger(__name__)
-
 from typing import List, Dict, Any
+
+# Third-Party Imports
 from fastapi import FastAPI, HTTPException, status
 
-# Import the layers:
+# Local/First-Party Imports
 from models import Product, ProductUpdate
 from inventory_io import load_products
-from inventory_service import add_product, update_product_quantity, delete_product
+from inventory_service import (
+    add_product,
+    update_product_quantity,
+    delete_product,
+    calculate_total_inventory_value,
+)
+
+# ----------------------------------------------------
+# LOGGING & DATA INITIALIZATION
+# ----------------------------------------------------
+
+# Run the logging setup immediately.
+import logger_config
+
+# Get logger instance for this module (main.py)
+logger = logging.getLogger(__name__)
+
+# Global In-Memory State for Inventory Data
+INVENTORY_DATA = load_products()
 
 # ----------------------------------------------------
 # 1. Initialization and Data Loading
@@ -85,10 +100,6 @@ app = FastAPI(
     ),
     version="0.1.0",
 )
-
-# Load the data once when the application starts.
-# This list (list[dict]) is the application's 'in-memory state'.
-INVENTORY_DATA: List[Dict[str, Any]] = load_products()
 
 
 # A simple log message to confirm startup
@@ -227,3 +238,21 @@ def delete_product_endpoint(product_id: int):
         )
 
     return None  # 204 No Content does not return a body
+
+
+# ----------------------------------------------------
+# 6. Endpoints (Analytics Route)
+# ----------------------------------------------------
+
+
+@app.get(
+    "/products/total_value",
+    summary="Calculate the total monetary value of the current inventory",
+    response_model=Dict[str, float],
+)
+def get_inventory_value():
+    """
+    Returns a dictionary containing the sum of (price * quantity) for all products.
+    """
+    total_value = calculate_total_inventory_value(inventory_data=INVENTORY_DATA)
+    return {"total_value": total_value}
