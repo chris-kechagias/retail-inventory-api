@@ -60,9 +60,9 @@ from typing import List, Dict, Any
 from fastapi import FastAPI, HTTPException, status
 
 # Import the layers:
-from models import Product
+from models import Product, ProductUpdate
 from inventory_io import load_products
-from inventory_service import add_product
+from inventory_service import add_product, update_product_quantity, delete_product
 
 # ----------------------------------------------------
 # 1. Initialization and Data Loading
@@ -151,3 +151,36 @@ def create_product(product: Product):
     )
 
     return created_product
+
+
+# ----------------------------------------------------
+# 4. Endpoints (PUT Route)
+# ----------------------------------------------------
+
+
+@app.put(
+    "/products/{product_id}",
+    response_model=Product,
+    summary="Update the quantity of an existing product",
+)
+def update_product(product_id: int, update_data: ProductUpdate):
+    """
+    ds
+    """
+    updated_product = update_product_quantity(
+        product_id=product_id,
+        new_quantity=update_data.quantity,
+        inventory_data=INVENTORY_DATA,
+    )
+
+    if updated_product is None:
+        # Raise 404 if the product to update was not found
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with ID {product_id} not found.",
+        )
+
+    return updated_product
+
+
+# will add delete endpoint here
