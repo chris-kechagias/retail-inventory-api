@@ -6,9 +6,8 @@ ensuring data integrity and type safety across the service.
 """
 
 from pydantic import BaseModel, Field
-from typing import (
-    Optional,
-)  # Not strictly needed here, but good practice to keep the import for reference
+
+# from typing import  Optional  Not strictly needed here, but good practice to keep the import for reference
 
 
 class Product(BaseModel):
@@ -34,9 +33,18 @@ class Product(BaseModel):
     quantity: int = Field(..., ge=0, description="Current stock quantity.")
 
     # In Stock: Tracks stock status. Default is True.
-    # Note: You can automatically calculate this based on 'quantity' in your service layer
-    # or keep it as a simple status flag for ease of use.
+    # Note: You can automatically calculate this based on 'quantity' in
+    # your service layer or keep it as a simple status flag for ease of use.
     in_stock: bool = Field(
         True,
         description="Boolean flag indicating if the product is currently in stock (quantity > 0).",
     )
+
+
+class ProductUpdate(BaseModel):
+    """Schema for partial product updates (only quantity in MVP)."""
+
+    quantity: int = Field(..., ge=0, description="New quantity, must be non-negative.")
+
+
+# Future fields for updates can be added here
