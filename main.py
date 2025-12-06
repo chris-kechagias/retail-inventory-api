@@ -9,15 +9,15 @@
 #   --> View a single product  --> GET /products/{id}
 #       (need to write a function for this) --- Done
 # 2.Add a new product --> POST /products
-#   (ex add_product | inventory_services.py)
+#   (ex add_product | inventory_services.py) --- Done
 # 3.Update product quantity --> PUT /products/{id}
-#    (ex update_product_quantity | inventory_services.py)
+#    (ex update_product_quantity | inventory_services.py) --- Done
 # 4.Delete a product --> DELETE /products/{id}
-#   (ex delete_product | inventory_services.py)
+#   (ex delete_product | inventory_services.py) --- Done
 # 4.Delete a product --> DELETE /products/{id}
-#   (ex add_product | inventory_services.py)
+#   (ex delete_product | inventory_services.py) --- Done
 # 5.Calculate total value of inventory --> GET /products/total_value
-#   (ex add_product | inventory_services.py)
+#   (ex add_product | inventory_services.py) was a bonus function
 # 6. Exit
 # ================================================
 
@@ -29,7 +29,8 @@
 #    |--> Implement get_next_id (to assign unique IDs to new products) --- Done
 #    |--> Implement add_product (to add new products to inventory) --- Done
 #    |--> Implement update_product_quantity (to update quantity of
-#         existing products)
+#         existing products) --- Done
+#    |--> Implement delete_product (to remove products from inventory) --- Done
 # E) Implement each CLI function to interact with the FastAPI
 #    endpoints using HTTP requests --> main.py
 #    |--> Implement GET /products (lists all) --- Done
@@ -38,17 +39,17 @@
 #         --- Done
 #    |--> Implement POST /products (adds new, uses Pydantic model) --- Done
 #    |--> Implement PUT /products/{id} (updates quantity, with
-#         error handling)
+#         error handling) --- Done
 #    |--> Implement DELETE /products/{id} (deletes product, with
-#         error handling)
+#         error handling) --- Done
 #    |--> Implement GET /products/total_value (calculates total
 #         inventory value)
 
 
 # Establishing Three-Tier Architecture
-#    |--> Presentation Layer: FastAPI endpoints (main.py)
-#    |--> Business Logic Layer: Inventory services (inventory_services.py)
-#    |--> Data Access Layer: File I/O operations (inventory_io.py)
+#    |--> Presentation Layer: FastAPI endpoints (main.py) --- Done
+#    |--> Business Logic Layer: Inventory services (inventory_services.py) --- Done
+#    |--> Data Access Layer: File I/O operations (inventory_io.py) --- Done
 
 """
 API Gateway: FastAPI application entry point.
@@ -165,7 +166,8 @@ def create_product(product: Product):
 )
 def update_product(product_id: int, update_data: ProductUpdate):
     """
-    ds
+    Updates the quantity of an existing product by ID.
+    Raises 404 if the product is not found.
     """
     updated_product = update_product_quantity(
         product_id=product_id,
@@ -195,7 +197,8 @@ def update_product(product_id: int, update_data: ProductUpdate):
 )
 def delete_product_endpoint(product_id: int):
     """
-    ds
+    Deletes a product by its unique ID.
+    Raises 404 if the product is not found.
     """
     deleted = delete_product(product_id=product_id, inventory_data=INVENTORY_DATA)
 
