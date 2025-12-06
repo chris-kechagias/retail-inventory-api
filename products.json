@@ -19,5 +19,12 @@
         "price": 599.0,
         "quantity": 0,
         "in_stock": false
+    },
+    {
+        "id": 4,
+        "name": "MacBook Pro 16gb/512gb",
+        "price": 1879.0,
+        "quantity": 4,
+        "in_stock": true
     }
 ]

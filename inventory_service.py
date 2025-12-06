@@ -1,12 +1,17 @@
 """
 Business Logic Layer (BLL) for the Retail API.
 
-Handles core operations like adding products
+Contains all core business rules, such as generating new IDs,
+updating inventory, and calculating metrics.
 """
 
 # from models import Product
 from typing import List, Dict, Any, Optional
+import logging
 from inventory_io import save_products  # load_products,
+
+# Get logger instance for this module
+logger = logging.getLogger(__name__)
 
 
 def get_next_id(products: list) -> int:
@@ -53,6 +58,10 @@ def add_product(new_product_data: dict, inventory_data: list) -> dict:
 
     # 4. Save the entire list to the JSON file (DAL call)
     save_products(inventory_data)
+
+    logger.info(
+        f"Product added successfully: ID {new_id}, Name: {product_to_add['name']}"
+    )
 
     return product_to_add
 
@@ -107,3 +116,28 @@ def delete_product(product_id: int, inventory_data: List[Dict[str, Any]]) -> boo
         save_products(inventory_data)
         return True
     return False
+
+
+def calculate_total_inventory_value(inventory_data: List[Dict[str, Any]]) -> float:
+    """
+    Calculates the total monetary value of all products in the inventory.
+    Value is calculated as: sum(price * quantity) for all items.
+    """
+    total_value = 0.0
+    for product in inventory_data:
+        try:
+            price = product.get("price", 0.0)
+            quantity = product.get("quantity", 0)
+            total_value += price * quantity
+        except TypeError:
+            # This handles cases where price or quantity might be none or non-numeric
+            logger.warning(
+                "Skipping product ID %s due to invalid price or " "quantity data.",
+                product.get("id"),
+            )
+            continue
+
+    # Log the sauccessful calculation
+    logger.info("Total inventory value calculated: $%.2f", total_value)
+
+    return round(total_value, 2)
