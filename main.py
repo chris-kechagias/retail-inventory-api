@@ -111,8 +111,21 @@ def startup_event():
 
 
 # ----------------------------------------------------
-# 2. Endpoints (GET Routes)
+# 2. Endpoints (Analytics Route + GET Routes)
 # ----------------------------------------------------
+
+
+@app.get(
+    "/products/total_value",
+    summary="Calculate the total monetary value of the current inventory",
+    response_model=Dict[str, float],
+)
+def get_inventory_value():
+    """
+    Returns a dictionary containing the sum of (price * quantity) for all products.
+    """
+    total_value = calculate_total_inventory_value(inventory_data=INVENTORY_DATA)
+    return {"total_value": total_value}
 
 
 @app.get(
@@ -238,21 +251,3 @@ def delete_product_endpoint(product_id: int):
         )
 
     return None  # 204 No Content does not return a body
-
-
-# ----------------------------------------------------
-# 6. Endpoints (Analytics Route)
-# ----------------------------------------------------
-
-
-@app.get(
-    "/products/total_value",
-    summary="Calculate the total monetary value of the current inventory",
-    response_model=Dict[str, float],
-)
-def get_inventory_value():
-    """
-    Returns a dictionary containing the sum of (price * quantity) for all products.
-    """
-    total_value = calculate_total_inventory_value(inventory_data=INVENTORY_DATA)
-    return {"total_value": total_value}
