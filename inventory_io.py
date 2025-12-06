@@ -56,7 +56,7 @@ def save_products(products: list):
     Saves the current list of products to the JSON file.
     Overwrites the existing file content to ensure data consistency.
     """
-    # Use 'products: list'to enforce type hint for clarity
+    # Use 'products: list' to enforce type hint for clarity
     with open(INVENTORY_DATA, "w", encoding="utf-8") as f:
-        # The ensure_ascii=False allows for proper encoding of Greek/special characters
+        # ensure_ascii=False allows proper encoding of Greek/special chars
         json.dump(products, f, indent=4, ensure_ascii=False)

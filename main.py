@@ -3,9 +3,9 @@
 # By using and testing new acquired knowledge
 
 # ==== Main functions of Inventory Tracker CLI ===
-# 1.View all products --> GET /products (ex inventory.py | main menu/loop)
+# 1.View all products --> GET /products (ex inventory.py | main menu/loop) --- Done
 #   |
-#   --> View a single product  --> GET /products/{id} (need to write a function for this)
+#   --> View a single product  --> GET /products/{id} (need to write a function for this) --- Done
 # 2.Add a new product --> POST /products (ex add_product | inventory_services.py)
 # 3.Update product quantity --> PUT /products/{id} (ex add_product | inventory_services.py)
 # 4.Delete a product --> DELETE /products/{id} (ex add_product | inventory_services.py)
