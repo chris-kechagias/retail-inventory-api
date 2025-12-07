@@ -34,9 +34,7 @@ def load_products() -> list:
             if not content:
                 return []
 
-            # Reset file pointer and load the content
-            f.seek(0)
-            data = json.load(f)
+            data = json.loads(content)  # Parse the string directly
 
             # Ensure we return a list of products, even if the JSON structure is a dictionary
             if isinstance(data, dict):

@@ -102,19 +102,16 @@ def delete_product(product_id: int, inventory_data: List[Dict[str, Any]]) -> boo
     Returns True if the product was deleted, False otherwise.
     """
     # 1. Find the index of the product to delete
-    product_index = -1
     for i, product in enumerate(inventory_data):
         if product["id"] == product_id:
-            product_index = i
-            break
+            # 2. Remove the product from the list by index
+            inventory_data.pop(i)
+            # 3. Persist the changes to the file
+            save_products(inventory_data)
+            logger.info(f"Product {product_id} deleted successfully")
+            return True
 
-    if product_index != -1:
-        # 2. Remove the product from the list by index
-        inventory_data.pop(product_index)
-
-        # 3. Persist the changes to the file
-        save_products(inventory_data)
-        return True
+    logger.warning(f"Attempted to delete non-existent product {product_id}")
     return False
 
 
@@ -137,7 +134,7 @@ def calculate_total_inventory_value(inventory_data: List[Dict[str, Any]]) -> flo
             )
             continue
 
-    # Log the sauccessful calculation
+    # Log the successful calculation
     logger.info("Total inventory value calculated: $%.2f", total_value)
 
     return round(total_value, 2)

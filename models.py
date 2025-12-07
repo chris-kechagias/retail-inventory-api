@@ -32,12 +32,11 @@ class Product(BaseModel):
     # Quantity: Integer, must be greater than or equal to 0 (can be out of stock).
     quantity: int = Field(..., ge=0, description="Current stock quantity.")
 
-    # In Stock: Tracks stock status. Default is True.
-    # Note: You can automatically calculate this based on 'quantity' in
-    # your service layer or keep it as a simple status flag for ease of use.
+    # In Stock: Calculated in service layer when quantity changes.
+    # Default True for new products (most items start in stock).
     in_stock: bool = Field(
-        True,
-        description="Boolean flag indicating if the product is currently in stock (quantity > 0).",
+        default=True,
+        description="Stock availability flag. Auto-updated in service layer based on quantity.",
     )
 
 
