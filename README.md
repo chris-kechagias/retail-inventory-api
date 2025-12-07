@@ -1,6 +1,6 @@
 # 🛒 Retail Product Inventory API
 
-## 🏆 Project Status & Technology Badges
+## Technology Badges
 
 [![GitHub](https://img.shields.io/badge/GitHub-Repo-blue?style=flat-square&logo=github)](https://github.com/chris-kechagias/retail-api)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square&logo=python)](https://www.python.org/)
@@ -10,16 +10,12 @@
 
 > **Note:** After deployment, replace `MYAPP` in the badge above with your actual Render app name.
 
----
+# 🏆 Project Status
 
-# PROJECT STATUS
-
-[![Last commit](https://img.shields.io/github/last-commit/chris-kechagias/retail-api?style=flat-square)]([YOUR-REPO-URL])
-[![Top Language](https://img.shields.io/github/languages/top/chris-kechagias/retail-api?style=flat-square)]([YOUR-REPO-URL])
-[![Repo size](https://img.shields.io/github/repo-size/chris-kechagias/retail-api?label=Repo%20Size&style=flat-square)]([YOUR-REPO-URL])
+[![Last commit](https://img.shields.io/github/last-commit/chris-kechagias/retail-api?style=flat-square)]([git@github.com:chris-kechagias/retail-inventory-api.git])
+[![Top Language](https://img.shields.io/github/languages/top/chris-kechagias/retail-api?style=flat-square)]([git@github.com:chris-kechagias/retail-inventory-api.git])
+[![Repo size](https://img.shields.io/github/repo-size/chris-kechagias/retail-api?label=Repo%20Size&style=flat-square)]([git@github.com:chris-kechagias/retail-inventory-api.git])
 [![Deployment Status](https://img.shields.io/badge/Deployed%20on-Render-006494?style=flat-square&logo=render)](https://YOUR-RENDER-URL)
-
----
 
 ---
 
