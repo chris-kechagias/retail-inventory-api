@@ -12,6 +12,17 @@
 
 ---
 
+# PROJECT STATUS
+
+[![Last commit](https://img.shields.io/github/last-commit/chris-kechagias/retail-api?style=flat-square)]([YOUR-REPO-URL])
+[![Top Language](https://img.shields.io/github/languages/top/chris-kechagias/retail-api?style=flat-square)]([YOUR-REPO-URL])
+[![Repo size](https://img.shields.io/github/repo-size/chris-kechagias/retail-api?label=Repo%20Size&style=flat-square)]([YOUR-REPO-URL])
+[![Deployment Status](https://img.shields.io/badge/Deployed%20on-Render-006494?style=flat-square&logo=render)](https://YOUR-RENDER-URL)
+
+---
+
+---
+
 ## 🎯 Project Goal: Three-Tier Architecture MVP
 
 This project is a **Minimal Viable Product (MVP)** of a Retail Product Inventory Management System, built to demonstrate production-ready **Three-Tier Architecture** and foundational API engineering skills required for an **AI Engineer** role.
