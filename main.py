@@ -1,63 +1,10 @@
-# This is an attempt for Inventory Tracker 2.0
-# Main purpose is to build a Retail API
-# By using and testing new acquired knowledge
-
-# ==== Main functions of Inventory Tracker CLI ===
-# 1.View all products --> GET /products
-#   (ex inventory.py | main menu/loop) --- Done
-#   |
-#   --> View a single product  --> GET /products/{id}
-#       (need to write a function for this) --- Done
-# 2.Add a new product --> POST /products
-#   (ex add_product | inventory_services.py) --- Done
-# 3.Update product quantity --> PUT /products/{id}
-#    (ex update_product_quantity | inventory_services.py) --- Done
-# 4.Delete a product --> DELETE /products/{id}
-#   (ex delete_product | inventory_services.py) --- Done
-# 4.Delete a product --> DELETE /products/{id}
-#   (ex delete_product | inventory_services.py) --- Done
-# 5.Calculate total value of inventory --> GET /products/total_value
-#   (ex add_product | inventory_services.py) was a bonus function
-# 6. Exit
-# ================================================
-
-# A) Define the Pydantic Product model --> models.py --- Done
-# B) Set up FastAPI app and endpoints --> main.py --- Done
-# C) Import my CLI's load_products and save_products functions
-#    --> inventory_io.py --- Done
-# D) Implement inventory service functions --> inventory_service.py --- Done
-#    |--> Implement get_next_id (to assign unique IDs to new products) --- Done
-#    |--> Implement add_product (to add new products to inventory) --- Done
-#    |--> Implement update_product_quantity (to update quantity of
-#         existing products) --- Done
-#    |--> Implement delete_product (to remove products from inventory) --- Done
-# E) Implement each CLI function to interact with the FastAPI
-#    endpoints using HTTP requests --> main.py
-#    |--> Implement GET /products (lists all) --- Done
-#    |--> Implement GET /products/{id} (gets single product with error
-#         handling if the ID is not found, e.g., raising HTTPException)
-#         --- Done
-#    |--> Implement POST /products (adds new, uses Pydantic model) --- Done
-#    |--> Implement PUT /products/{id} (updates quantity, with
-#         error handling) --- Done
-#    |--> Implement DELETE /products/{id} (deletes product, with
-#         error handling) --- Done
-#    |--> Implement GET /products/total_value (calculates total
-#         inventory value) --- Done
-
-
-# Establishing Three-Tier Architecture
-#    |--> Presentation Layer: FastAPI endpoints (main.py) --- Done
-#    |--> Business Logic Layer: Inventory services
-#         (inventory_services.py) --- Done
-#    |--> Data Access Layer: File I/O operations (inventory_io.py) --- Done
-
 """
 API Gateway: FastAPI application entry point.
 
 Defines the HTTP routes and acts as the Presentation Layer,
 connecting the client requests to the Business Logic (inventory_service).
 """
+
 # Standard Library Imports
 import logging
 from typing import List, Dict, Any
@@ -98,7 +45,7 @@ app = FastAPI(
         "An MVP REST API for tracking retail products, "
         "built with FastAPI and Pydantic."
     ),
-    version="0.1.0",
+    version="1.0.0",
 )
 
 
@@ -124,7 +71,9 @@ def get_inventory_value():
     """
     Returns a dictionary containing the sum of (price * quantity) for all products.
     """
+    logger.info("Calculating total inventory value")
     total_value = calculate_total_inventory_value(inventory_data=INVENTORY_DATA)
+    logger.info(f"Total inventory value: ${total_value:.2f}")
     return {"total_value": total_value}
 
 
@@ -138,6 +87,7 @@ def get_all_products():
     GET /products
     Returns the complete list of all products in the inventory.
     """
+    logger.info(f"Fetching all products (count: {len(INVENTORY_DATA)})")
     # FastAPI/Pydantic automatically validates and converts the list of dictionaries
     # into the Product schema for the response.
     return INVENTORY_DATA
@@ -153,13 +103,17 @@ def get_product(product_id: int) -> Product:
     GET /products/{product_id}
     Returns a single product by its unique ID. Raises 404 if not found.
     """
+    logger.info(f"Fetching product with ID: {product_id}")
+
     # Temporary logic: Searching directly in the list
     # (will move to the service layer later)
-
     for product in INVENTORY_DATA:
         if product["id"] == product_id:
+            logger.info(f"Product {product_id} found: {product['name']}")
             return product
+
     # Raise the standard HTTP 404 if not found
+    logger.warning(f"Product {product_id} not found - returning 404")
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail=f"Product with ID {product_id} not found.",
@@ -184,6 +138,10 @@ def create_product(product: Product):
     The Pydantic 'Product' model automatically validates the input data (e.g.,
     price and quantity are > 0).
     """
+    logger.info(
+        f"Creating new product: {product.name} (price: ${product.price}, quantity: {product.quantity})"
+    )
+
     # Call the Service Layer for business logic
     created_product = add_product(
         # We use .model_dump() to convert the Pydantic object back into a
@@ -192,6 +150,7 @@ def create_product(product: Product):
         inventory_data=INVENTORY_DATA,  # Pass the global in-memory state
     )
 
+    logger.info(f"Product created successfully with ID: {created_product['id']}")
     return created_product
 
 
@@ -210,6 +169,10 @@ def update_product(product_id: int, update_data: ProductUpdate):
     Updates the quantity of an existing product by ID.
     Raises 404 if the product is not found.
     """
+    logger.info(
+        f"Updating product {product_id} with new quantity: {update_data.quantity}"
+    )
+
     updated_product = update_product_quantity(
         product_id=product_id,
         new_quantity=update_data.quantity,
@@ -218,11 +181,15 @@ def update_product(product_id: int, update_data: ProductUpdate):
 
     if updated_product is None:
         # Raise 404 if the product to update was not found
+        logger.warning(f"Product {product_id} not found for update - returning 404")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Product with ID {product_id} not found.",
         )
 
+    logger.info(
+        f"Product {product_id} updated successfully (new quantity: {updated_product['quantity']}, in_stock: {updated_product['in_stock']})"
+    )
     return updated_product
 
 
@@ -241,13 +208,17 @@ def delete_product_endpoint(product_id: int) -> None:
     Deletes a product by its unique ID.
     Raises 404 if the product is not found.
     """
+    logger.info(f"Attempting to delete product {product_id}")
+
     deleted = delete_product(product_id=product_id, inventory_data=INVENTORY_DATA)
 
     if not deleted:
         # Raise 404 if the product to delete was not found
+        logger.warning(f"Product {product_id} not found for deletion - returning 404")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Product with ID {product_id} not found.",
         )
 
+    logger.info(f"Product {product_id} deleted successfully")
     return None  # 204 No Content does not return a body
