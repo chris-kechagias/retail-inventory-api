@@ -212,7 +212,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 **Chris Kechagias**  
 Transitioning from Automation Engineer with Retail Management Experience to AI Engineering  
 📍 Thessaloniki, Greece  
-🔗 [GitHub](https://github.com/chris-kechagias) | [LinkedIn](https://www.linkedin.com/in/your-profile)
+🔗 [GitHub](https://github.com/chris-kechagias) | [LinkedIn](www.linkedin.com/in/chkechagias)
 
 ---
 
