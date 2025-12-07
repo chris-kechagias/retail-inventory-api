@@ -81,8 +81,8 @@ The API provides complete CRUD (Create, Read, Update, Delete) capability for pro
 1. Clone the repository:
 
 ```bash
-   git clone https://github.com/chris-kechagias/retail-api.git
-   cd retail-api
+   git clone https://github.com/chris-kechagias/retail-inventory-api.git
+   cd retail-inventory-api
 ```
 
 2. Create and activate a virtual environment:
