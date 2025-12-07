@@ -33,5 +33,12 @@
         "price": 99.0,
         "quantity": 22,
         "in_stock": true
+    },
+    {
+        "id": 6,
+        "name": "Logitech Πληκτρολόγιο MX Keys Mini for Mac",
+        "price": 129.99,
+        "quantity": 7,
+        "in_stock": true
     }
 ]
