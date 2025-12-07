@@ -10,11 +10,11 @@
 
 > **Note:** After deployment, replace `MYAPP` in the badge above with your actual Render app name.
 
-# 🏆 Project Status
+## 🏆 Project Status
 
-[![Last commit](https://img.shields.io/github/last-commit/chris-kechagias/retail-api?style=flat-square)]([git@github.com:chris-kechagias/retail-inventory-api.git])
-[![Top Language](https://img.shields.io/github/languages/top/chris-kechagias/retail-api?style=flat-square)]([git@github.com:chris-kechagias/retail-inventory-api.git])
-[![Repo size](https://img.shields.io/github/repo-size/chris-kechagias/retail-api?label=Repo%20Size&style=flat-square)]([git@github.com:chris-kechagias/retail-inventory-api.git])
+[![Last commit](https://img.shields.io/github/last-commit/chris-kechagias/retail-api?style=flat-square)]([https://github.com/chris-kechagias/retail-inventory-api.git])
+[![Top Language](https://img.shields.io/github/languages/top/chris-kechagias/retail-api?style=flat-square)]([https://github.com/chris-kechagias/retail-inventory-api.git])
+[![Repo size](https://img.shields.io/github/repo-size/chris-kechagias/retail-api?label=Repo%20Size&style=flat-square)]([https://github.com/chris-kechagias/retail-inventory-api.git])
 [![Deployment Status](https://img.shields.io/badge/Deployed%20on-Render-006494?style=flat-square&logo=render)](https://YOUR-RENDER-URL)
 
 ---
