@@ -4,6 +4,8 @@
 
 [![GitHub](https://img.shields.io/badge/GitHub-Repo-blue?style=flat-square&logo=github)](https://github.com/chris-kechagias/retail-api)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square&logo=python)](https://www.python.org/)
+[![Dockerfile](https://img.shields.io/badge/container-Dockerfile-2496ED?style=flat-square&logo=docker)](https://docs.docker.com/engine/reference/builder/)
+[![Procfile](https://img.shields.io/badge/Procfile-Render-000000?style=flat-square&logo=heroku)](https://render.com/docs/deploy-web-services)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-05998b?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Deployment](https://img.shields.io/badge/Deployed%20on-Render-006494?style=flat-square&logo=render)](https://retail-inventory-api-chris.onrender.com)
