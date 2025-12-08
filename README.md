@@ -50,14 +50,14 @@ Built as part of my career transition from retail management to AI Engineering, 
 
 ## 🛠️ Tech Stack
 
-| Component       | Technology     | Purpose                                                       |
-| :-------------- | :------------- | :------------------------------------------------------------ |
-| **Language**    | Python 3.11+   | Primary development language.                                 |
-| **Framework**   | FastAPI        | High-performance, asynchronous RESTful API framework.         |
-| **Validation**  | Pydantic       | Request/response validation, type safety, auto-documentation. |
-| **Server**      | Uvicorn        | ASGI server for running the application.                      |
-| **Persistence** | JSON File      | Simple local persistence for the MVP (future: PostgreSQL).    |
-| **Logging**     | Python logging | Structured logging to console and file for debugging.         |
+| Component       | Technology                                      | Purpose                                                                |
+| :-------------- | :---------------------------------------------- | :--------------------------------------------------------------------- |
+| **Language**    | Python 3.11+                                    | Primary development language.                                          |
+| **Framework**   | FastAPI                                         | High-performance, asynchronous RESTful API framework.                  |
+| **Validation**  | Pydantic                                        | Request/response validation, type safety, auto-documentation.          |
+| **Server**      | Uvicorn / **Docker/Render**                     | ASGI server for running the application, containerized for deployment. |
+| **Persistence** | JSON File                                       | Simple local persistence for the MVP (future: **MongoDB/PostgreSQL**). |
+| **Logging**     | Python logging (through **`logger_config.py`**) | Structured logging to console and file for debugging and monitoring.   |
 
 ---
 
@@ -119,8 +119,8 @@ The API will be available at: **http://127.0.0.1:8000**
 
 FastAPI automatically generates interactive documentation:
 
-- **Swagger UI:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-- **ReDoc:** [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
+- **Swagger UI:** [https://retail-inventory-api-chris.onrender.com/docs](https://retail-inventory-api-chris.onrender.com/docs)
+- **ReDoc:** [https://retail-inventory-api-chris.onrender.com/redoc](https://retail-inventory-api-chris.onrender.com/redoc)
 
 ---
 
@@ -178,19 +178,21 @@ curl -X DELETE "http://127.0.0.1:8000/products/1"
 
 ```
 retail-api/
-├── main.py                 # Presentation Layer (FastAPI routes)
-├── models.py               # Pydantic data models & validation
-├── inventory_service.py    # Business Logic Layer
-├── inventory_io.py         # Data Access Layer (JSON I/O)
-├── logger_config.py        # Logging configuration
-├── requirements.txt        # Python dependencies
-├── README.md               # This file
-├── DESIGN.md               # Architecture & design decisions
-├── .gitignore              # Git ignore rules
+├── main.py                   # Presentation Layer (FastAPI routes)
+├── models.py                 # Pydantic data models & validation
+├── inventory_service.py      # Business Logic Layer
+├── inventory_io.py           # Data Access Layer (JSON I/O)
+├── logger_config.py          # Logging configuration
+├── requirements.txt          # Python dependencies
+├── README.md                 # This file
+├── DESIGN.md                 # Architecture & design decisions
+├── .gitignore                # Git ignore rules
+├── Dockerfile                # Instructions for container build (Deployment)
+├── Procfile                  # Startup command for Render/Heroku
 ├── data/
-│   └── products.json       # JSON data store
+│   └── products.json         # JSON data store
 └── logs/
-    └── app.log             # Application logs
+    └── app.log               # Application logs
 ```
 
 ---
