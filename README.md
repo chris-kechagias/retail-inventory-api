@@ -6,16 +6,14 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square&logo=python)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-05998b?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
-[![Deployment](https://img.shields.io/badge/Deployed%20on-Render-006494?style=flat-square&logo=render)](https://retail-api-MYAPP.onrender.com)
-
-> **Note:** After deployment, replace `MYAPP` in the badge above with your actual Render app name.
+[![Deployment](https://img.shields.io/badge/Deployed%20on-Render-006494?style=flat-square&logo=render)](https://retail-inventory-api-chris.onrender.com)
 
 ## 🏆 Project Status
 
 [![Last commit](https://img.shields.io/github/last-commit/chris-kechagias/retail-inventory-api?style=flat-square)](https://github.com/chris-kechagias/retail-inventory-api.git)
 [![Top Language](https://img.shields.io/github/languages/top/chris-kechagias/retail-inventory-api?style=flat-square)](https://github.com/chris-kechagias/retail-inventory-api.git)
 [![Repo size](https://img.shields.io/github/repo-size/chris-kechagias/retail-inventory-api?label=Repo%20Size&style=flat-square)](https://github.com/chris-kechagias/retail-inventory-api.git)
-[![Deployment Status](https://img.shields.io/badge/Deployed%20on-Render-006494?style=flat-square&logo=render)](https://YOUR-RENDER-URL)
+[![Deployment Status](https://img.shields.io/badge/Deployed%20on-Render-006494?style=flat-square&logo=render)](https://retail-inventory-api-chris.onrender.com)
 
 ---
 
