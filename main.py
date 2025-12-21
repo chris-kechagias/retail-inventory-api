@@ -63,14 +63,23 @@ def on_startup():
     summary="Calculate the total monetary value of the current inventory",
     response_model=Dict[str, float],
 )
-def get_inventory_value():
+def get_inventory_value(session: SessionDep):
     """
-    Returns a dictionary containing the sum of (price * quantity) for all products.
+    Calculate the total value of all products in stock.
+
+    Performs the calculation (price * quantity) directly within the
+    SQL engine for maximum performance. Returns 0.0 if the inventory is empty.
     """
-    logger.info("Calculating total inventory value")
-    total_value = calculate_total_inventory_value(inventory_data=INVENTORY_DATA)
-    logger.info(f"Total inventory value: ${total_value:.2f}")
-    return {"total_value": total_value}
+    logger.info("Calculating total inventory value via database-side aggregation")
+
+    statement = select(func.sum(Product.price * Product.quantity))
+
+    result = session.exec(statement).one()
+    total_value = result or 0.0
+
+    logger.info(f"Total inventory value successfully calculated: ${total_value:.2f}")
+
+    return {"Total Inventory Value $": total_value}
 
 
 @app.get(
