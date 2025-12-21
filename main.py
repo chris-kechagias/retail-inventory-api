@@ -98,27 +98,24 @@ def get_all_products(
     response_model=Product,
     summary="Retrieve a single product by its unique ID",
 )
-def get_product(session: SessionDep) -> Product:
+def get_product(product_id: int, session: SessionDep) -> Product:
     """
     GET /products/{product_id}
     Returns a single product by its unique ID. Raises 404 if not found.
     """
-    product = session.get(Product, product_id)
     logger.info(f"Fetching product with ID: {product_id}")
+    product = session.get(Product, product_id)
 
-    # Temporary logic: Searching directly in the list
-    # (will move to the service layer later)
-    for product in INVENTORY_DATA:
-        if product["id"] == product_id:
-            logger.info(f"Product {product_id} found: {product['name']}")
-            return product
+    if not product:
+        # Raise the standard HTTP 404 if not found
+        logger.warning(f"Product {product_id} not found - returning 404")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with ID {product_id} not found.",
+        )
 
-    # Raise the standard HTTP 404 if not found
-    logger.warning(f"Product {product_id} not found - returning 404")
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"Product with ID {product_id} not found.",
-    )
+    logger.info(f"Product {product_id} found: {product.name}")
+    return product
 
 
 # ----------------------------------------------------
