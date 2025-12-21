@@ -1,49 +1,37 @@
 """
-Pydantic Data Schemas for the Retail Inventory API.
+SQLModel Data Schemas for the Retail Inventory API.
 
-This module defines the data contract for all API requests and responses,
-ensuring data integrity and type safety across the service.
+This module defines both the database table structure AND the API data contract,
+using SQLModel (combines Pydantic + SQLAlchemy).
 """
 
-from pydantic import BaseModel, Field
+from sqlmodel import SQLModel, Field
 
-# from typing import  Optional  Not strictly needed here, but good practice to keep the import for reference
-
-
-class Product(BaseModel):
+class ProductBase(SQLModel):
     """
-    Data contract (Schema) for a single Product resource.
-
-    Defines the required fields and validation rules (e.g., price > 0, quantity >= 0)
-    for data traveling through the API endpoints.
+    Base schema for Product resource, shared attributes.
     """
 
-    # ID: Number, must be positive.
-    id: int = Field(..., gt=0, description="Unique product identifier.")
-
-    # Name: String, maximum length 50 characters.
-    name: str = Field(..., max_length=50, description="Name of the product.")
-
-    # Price: Float, must be strictly greater than zero.
-    price: float = Field(
-        ..., gt=0, description="Unit price, must be greater than zero."
-    )
-
-    # Quantity: Integer, must be greater than or equal to 0 (can be out of stock).
-    quantity: int = Field(..., ge=0, description="Current stock quantity.")
-
-    # In Stock: Calculated in service layer when quantity changes.
-    # Default True for new products (most items start in stock).
-    in_stock: bool = Field(
-        default=True,
-        description="Stock availability flag. Auto-updated in service layer based on quantity.",
-    )
-
-
-class ProductUpdate(BaseModel):
-    """Schema for partial product updates (only quantity in MVP)."""
-
-    quantity: int = Field(..., ge=0, description="New quantity, must be non-negative.")
-
-
-# Future fields for updates can be added here
+    name: str = Field(max_length=50, description="Name of the product.")
+    price: float = Field(gt=0, description="Unit price, must be greater than zero.")
+    quantity: int = Field(default=0,ge=0, description="Current stock quantity.")
+    # Auto-updated in service layer based on quantity / User can override on create
+    in_stock: bool = Field(default=True, description="Stock availability flag.") 
+class Product(ProductBase, table=True):
+    """
+    Data contract (Schema) and database table for a single Product resource.
+    
+    SQLModel automatically handles both Pydantic validation
+    and SQLAlchemy ORM mapping.
+    """
+    id: int | None = Field(default=None, primary_key=True, description="Unique product identifier.")
+    
+class ProductCreate(ProductBase):
+     """Schema for creating a new product."""
+    in_stock: bool | None = None
+class ProductUpdate(SQLModel):
+    """Schema for partial product updates."""
+    name: str | None = Field(default=None, max_length=50)
+    price: float | None = Field(default=None, gt=0)
+    quantity: int | None = Field(default=None, ge=0)
+    in_stock: bool | None = None
