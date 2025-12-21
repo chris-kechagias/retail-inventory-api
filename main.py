@@ -11,16 +11,11 @@ from typing import List, Dict, Any
 
 # Third-Party Imports
 from fastapi import FastAPI, HTTPException, status
+from sqlmodel import select, func
 
 # Local/First-Party Imports
-from models import Product, ProductUpdate
-from inventory_io import load_products
-from inventory_service import (
-    add_product,
-    update_product_quantity,
-    delete_product,
-    calculate_total_inventory_value,
-)
+from models import Product, ProductCreate, ProductUpdate
+from database import create_db_and_tables, SessionDep
 
 # ----------------------------------------------------
 # LOGGING & DATA INITIALIZATION
@@ -32,8 +27,6 @@ import logger_config
 # Get logger instance for this module (main.py)
 logger = logging.getLogger(__name__)
 
-# Global In-Memory State for Inventory Data
-INVENTORY_DATA = load_products()
 
 # ----------------------------------------------------
 # 1. Initialization and Data Loading
@@ -51,10 +44,13 @@ app = FastAPI(
 
 # A simple log message to confirm startup
 @app.on_event("startup")
-def startup_event():
-    logger.info("Retail API Server Starting Up")
-    # Log the initial inventory size
-    logger.info(f"Initial inventory loaded with {len(INVENTORY_DATA)} products.")
+def on_startup():
+    logger.info("Initializing PostgreSQL database...")
+    try:
+        create_db_and_tables()
+        logger.info("Database tables verified/created successfully.")
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {e}")
 
 
 # ----------------------------------------------------

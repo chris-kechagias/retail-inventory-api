@@ -4,7 +4,7 @@ Database configuration for the Retail Inventory API.
 Handles PostgreSQL connection using SQLModel.
 """
 
-from typing import Annotated
+from typing import Annotated, Generator, Any
 from fastapi import Depends
 from sqlmodel import Session, create_engine, SQLModel
 
@@ -27,3 +27,4 @@ def get_session():
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
+"""Dependency to inject a database session into FastAPI routes."""
