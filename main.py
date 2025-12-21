@@ -7,10 +7,10 @@ connecting the client requests to the Business Logic (inventory_service).
 
 # Standard Library Imports
 import logging
-from typing import List, Dict, Any
+from typing import Annotated, List, Dict, Any
 
 # Third-Party Imports
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Query
 from sqlmodel import select, func
 
 # Local/First-Party Imports
@@ -78,15 +78,19 @@ def get_inventory_value():
     response_model=List[Product],
     summary="Retrieve all products in the inventory",
 )
-def get_all_products():
+def get_all_products(
+    session: SessionDep,
+    offset: int = 0,
+    limit: Annotated[int, Query(le=100)] = 100,
+):
     """
     GET /products
     Returns the complete list of all products in the inventory.
     """
-    logger.info(f"Fetching all products (count: {len(INVENTORY_DATA)})")
-    # FastAPI/Pydantic automatically validates and converts the list of dictionaries
-    # into the Product schema for the response.
-    return INVENTORY_DATA
+    statement = select(Product).offset(offset).limit(limit)
+    products = session.exec(statement).all()
+    logger.info(f"Fetching products: offset={offset}, limit={limit}")
+    return products
 
 
 @app.get(
@@ -94,11 +98,12 @@ def get_all_products():
     response_model=Product,
     summary="Retrieve a single product by its unique ID",
 )
-def get_product(product_id: int) -> Product:
+def get_product(session: SessionDep) -> Product:
     """
     GET /products/{product_id}
     Returns a single product by its unique ID. Raises 404 if not found.
     """
+    product = session.get(Product, product_id)
     logger.info(f"Fetching product with ID: {product_id}")
 
     # Temporary logic: Searching directly in the list
