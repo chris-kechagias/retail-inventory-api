@@ -1,64 +1,60 @@
 """
 API Gateway: FastAPI application entry point.
 
-Defines the HTTP routes and acts as the Presentation Layer,
-connecting the client requests to the Business Logic (inventory_service).
+This module defines the RESTful endpoints for the Retail Inventory system.
+It acts as the Presentation Layer, handling HTTP requests/responses and
+orchestrating data persistence through SQLModel and PostgreSQL.
 """
 
 # Standard Library Imports
 import logging
-from typing import List, Dict, Any
+from typing import Annotated, List, Dict, Any
+from contextlib import asynccontextmanager
 
 # Third-Party Imports
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Query
+from sqlmodel import select, func
 
 # Local/First-Party Imports
-from models import Product, ProductUpdate
-from inventory_io import load_products
-from inventory_service import (
-    add_product,
-    update_product_quantity,
-    delete_product,
-    calculate_total_inventory_value,
-)
+from models import Product, ProductCreate, ProductUpdate
+from database import create_db_and_tables, SessionDep
 
 # ----------------------------------------------------
-# LOGGING & DATA INITIALIZATION
+# LOGGING & INITIALIZATION
 # ----------------------------------------------------
 
-# Run the logging setup immediately.
 import logger_config
 
-# Get logger instance for this module (main.py)
 logger = logging.getLogger(__name__)
 
-# Global In-Memory State for Inventory Data
-INVENTORY_DATA = load_products()
 
-# ----------------------------------------------------
-# 1. Initialization and Data Loading
-# ----------------------------------------------------
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Handles the application startup and shutdown events.
+
+    Ensures the database engine is ready and tables are created before
+    the API starts accepting traffic. This replaces the deprecated @app.on_event logic.
+    """
+    logger.info(
+        "Lifespan Startup: Verifying database connectivity and creating tables."
+    )
+    # This replaces the old @app.on_event("startup") logic.
+    # It ensures the database is ready before the first request arrives.
+    create_db_and_tables()
+    yield
+    logger.info("Lifespan Shutdown: Cleaning up resources.")
+
 
 app = FastAPI(
     title="Retail Inventory API",
-    description=(
-        "An MVP REST API for tracking retail products, "
-        "built with FastAPI and Pydantic."
-    ),
-    version="1.0.0",
+    description="A robust FastAPI service for managing warehouse stock using PostgreSQL and SQLModel.",
+    version="2.0.0",  # Updated to reflect database-backed milestone
+    lifespan=lifespan,
 )
 
-
-# A simple log message to confirm startup
-@app.on_event("startup")
-def startup_event():
-    logger.info("Retail API Server Starting Up")
-    # Log the initial inventory size
-    logger.info(f"Initial inventory loaded with {len(INVENTORY_DATA)} products.")
-
-
 # ----------------------------------------------------
-# 2. Endpoints (Analytics Route + GET Routes)
+# 1. ANALYTICS ROUTES
 # ----------------------------------------------------
 
 
@@ -67,61 +63,79 @@ def startup_event():
     summary="Calculate the total monetary value of the current inventory",
     response_model=Dict[str, float],
 )
-def get_inventory_value():
+def get_inventory_value(session: SessionDep):
     """
-    Returns a dictionary containing the sum of (price * quantity) for all products.
+    Calculates the aggregate value (price * quantity) of all inventory.
+
+    Utilizes SQL-side aggregation (func.sum) to ensure high performance
+    even with thousands of rows, avoiding Python-level loops.
     """
-    logger.info("Calculating total inventory value")
-    total_value = calculate_total_inventory_value(inventory_data=INVENTORY_DATA)
-    logger.info(f"Total inventory value: ${total_value:.2f}")
-    return {"total_value": total_value}
+    logger.info("Executing database-side aggregation for total inventory value.")
+
+    # Calculate (price * quantity) per row and sum them up in the DB engine
+    statement = select(func.sum(Product.price * Product.quantity))
+    result = session.exec(statement).one()
+    total_value = result or 0.0
+
+    logger.info(f"Total inventory value successfully calculated: ${total_value:.2f}")
+
+    return {"Total Inventory Value $": total_value}
+
+
+# ----------------------------------------------------
+# 2. READ ROUTES
+# ----------------------------------------------------
 
 
 @app.get(
     "/products",
     response_model=List[Product],
-    summary="Retrieve all products in the inventory",
+    summary="List all products with pagination",
 )
-def get_all_products():
+def get_all_products(
+    session: SessionDep,
+    offset: int = 0,
+    limit: Annotated[int, Query(le=100)] = 100,
+):
     """
-    GET /products
-    Returns the complete list of all products in the inventory.
+    Retrieves a list of products using offset/limit pagination.
+
+    Args:
+        offset: The number of items to skip.
+        limit: The maximum number of items to return (capped at 100).
     """
-    logger.info(f"Fetching all products (count: {len(INVENTORY_DATA)})")
-    # FastAPI/Pydantic automatically validates and converts the list of dictionaries
-    # into the Product schema for the response.
-    return INVENTORY_DATA
+    statement = select(Product).offset(offset).limit(limit)
+    products = session.exec(statement).all()
+    logger.info(f"Retrieved {len(products)} products from database.")
+    return products
 
 
 @app.get(
     "/products/{product_id}",
     response_model=Product,
-    summary="Retrieve a single product by its unique ID",
+    summary="Get product by ID",
 )
-def get_product(product_id: int) -> Product:
+def get_product(product_id: int, session: SessionDep) -> Product:
     """
-    GET /products/{product_id}
-    Returns a single product by its unique ID. Raises 404 if not found.
+    Fetches a single product record. Raises 404 if the ID does not exist.
     """
     logger.info(f"Fetching product with ID: {product_id}")
+    product = session.get(Product, product_id)
 
-    # Temporary logic: Searching directly in the list
-    # (will move to the service layer later)
-    for product in INVENTORY_DATA:
-        if product["id"] == product_id:
-            logger.info(f"Product {product_id} found: {product['name']}")
-            return product
+    if not product:
+        # Raise the standard HTTP 404 if not found
+        logger.warning(f"Product {product_id} not found - returning 404")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with ID {product_id} not found.",
+        )
 
-    # Raise the standard HTTP 404 if not found
-    logger.warning(f"Product {product_id} not found - returning 404")
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"Product with ID {product_id} not found.",
-    )
+    logger.info(f"Product {product_id} found: {product.name}")
+    return product
 
 
 # ----------------------------------------------------
-# 3. Endpoints (POST Routes)
+# 3. WRITE ROUTES (POST/PATCH/DELETE)
 # ----------------------------------------------------
 
 
@@ -131,55 +145,48 @@ def get_product(product_id: int) -> Product:
     status_code=status.HTTP_201_CREATED,
     summary="Add a new product to the inventory",
 )
-def create_product(product: Product):
+def create_product(product: ProductCreate, session: SessionDep) -> Product:
     """
-    Receives product data, assigns a unique ID, and saves it to the inventory.
+    Persists a new product record.
 
-    The Pydantic 'Product' model automatically validates the input data (e.g.,
-    price and quantity are > 0).
+    Validates input using ProductCreate and maps it to the Product table model.
+    The database automatically handles ID generation and stock-status logic.
     """
     logger.info(
         f"Creating new product: {product.name} (price: ${product.price}, quantity: {product.quantity})"
     )
 
-    # Call the Service Layer for business logic
-    created_product = add_product(
-        # We use .model_dump() to convert the Pydantic object back into a
-        # standard Python dict
-        new_product_data=product.model_dump(),
-        inventory_data=INVENTORY_DATA,  # Pass the global in-memory state
-    )
+    # 1. Converts the Pydantic schema into a SQLModel Table instance
+    db_product = Product.model_validate(product)
+    # 2. Add to session and commit to persist
+    session.add(db_product)
+    session.commit()
+    session.refresh(db_product)  # Syncs db_product with the DB-generated ID
 
-    logger.info(f"Product created successfully with ID: {created_product['id']}")
-    return created_product
-
-
-# ----------------------------------------------------
-# 4. Endpoints (PUT Route)
-# ----------------------------------------------------
+    logger.info(f"Product created successfully with ID: {db_product.id}")
+    return db_product
 
 
-@app.put(
+@app.patch(
     "/products/{product_id}",
     response_model=Product,
-    summary="Update the quantity of an existing product",
+    summary="Partial update of a product's quantity and/or stock status",
 )
-def update_product(product_id: int, update_data: ProductUpdate):
+def update_product(
+    product_id: int, update_data: ProductUpdate, session: SessionDep
+) -> Product:
     """
-    Updates the quantity of an existing product by ID.
-    Raises 404 if the product is not found.
+    Updates specific fields of an existing product.
+
+    Uses 'exclude_unset=True' to ensure only fields provided in the
+    request body are modified, preserving other existing values.
     """
     logger.info(
         f"Updating product {product_id} with new quantity: {update_data.quantity}"
     )
+    db_product = session.get(Product, product_id)
 
-    updated_product = update_product_quantity(
-        product_id=product_id,
-        new_quantity=update_data.quantity,
-        inventory_data=INVENTORY_DATA,
-    )
-
-    if updated_product is None:
+    if not db_product:
         # Raise 404 if the product to update was not found
         logger.warning(f"Product {product_id} not found for update - returning 404")
         raise HTTPException(
@@ -187,38 +194,46 @@ def update_product(product_id: int, update_data: ProductUpdate):
             detail=f"Product with ID {product_id} not found.",
         )
 
+    # Update only the fields provided in update_data
+    product_data = update_data.model_dump(exclude_unset=True)
+
+    # Update the database product with the new data
+    for key, value in product_data.items():
+        setattr(db_product, key, value)
+
+    session.add(db_product)
+    session.commit()
+    session.refresh(db_product)
+
     logger.info(
-        f"Product {product_id} updated successfully (new quantity: {updated_product['quantity']}, in_stock: {updated_product['in_stock']})"
+        f"Product {product_id} updated successfully (new quantity: {db_product.quantity}, in_stock: {db_product.in_stock})"
     )
-    return updated_product
-
-
-# ----------------------------------------------------
-# 5. Endpoints (DELETE Route)
-# ----------------------------------------------------
+    return db_product
 
 
 @app.delete(
     "/products/{product_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete a product from the inventory",
+    summary="Remove a product",
 )
-def delete_product_endpoint(product_id: int) -> None:
+def delete_product(product_id: int, session: SessionDep) -> None:
     """
-    Deletes a product by its unique ID.
-    Raises 404 if the product is not found.
+    Deletes a product from the database.
+    Returns HTTP 204 to indicate successful deletion with no response body.
     """
     logger.info(f"Attempting to delete product {product_id}")
+    db_product = session.get(Product, product_id)
 
-    deleted = delete_product(product_id=product_id, inventory_data=INVENTORY_DATA)
-
-    if not deleted:
+    if not db_product:
         # Raise 404 if the product to delete was not found
         logger.warning(f"Product {product_id} not found for deletion - returning 404")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Product with ID {product_id} not found.",
         )
+
+    session.delete(db_product)
+    session.commit()
 
     logger.info(f"Product {product_id} deleted successfully")
     return None  # 204 No Content does not return a body
