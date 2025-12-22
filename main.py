@@ -8,6 +8,7 @@ connecting the client requests to the Business Logic (inventory_service).
 # Standard Library Imports
 import logging
 from typing import Annotated, List, Dict, Any
+from contextlib import asynccontextmanager
 
 # Third-Party Imports
 from fastapi import FastAPI, HTTPException, status, Query
@@ -43,14 +44,17 @@ app = FastAPI(
 
 
 # A simple log message to confirm startup
-@app.on_event("startup")
-def on_startup():
-    logger.info("Initializing PostgreSQL database...")
-    try:
-        create_db_and_tables()
-        logger.info("Database tables verified/created successfully.")
-    except Exception as e:
-        logger.error(f"Failed to initialize database: {e}")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup logic: Create database and tables
+    logger.info("Starting up: Creating database tables...")
+    create_db_and_tables()
+    yield
+    # Shutdown logic: (Add cleanup here if needed)
+    logger.info("Shutting down...")
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 # ----------------------------------------------------
