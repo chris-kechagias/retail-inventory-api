@@ -165,12 +165,14 @@ def create_product(product: ProductCreate, session: SessionDep) -> Product:
 # ----------------------------------------------------
 
 
-@app.put(
+@app.patch(
     "/products/{product_id}",
     response_model=Product,
     summary="Update the quantity of an existing product",
 )
-def update_product(product_id: int, update_data: ProductUpdate):
+def update_product(
+    product_id: int, update_data: ProductUpdate, session: SessionDep
+) -> Product:
     """
     Updates the quantity of an existing product by ID.
     Raises 404 if the product is not found.
@@ -178,14 +180,9 @@ def update_product(product_id: int, update_data: ProductUpdate):
     logger.info(
         f"Updating product {product_id} with new quantity: {update_data.quantity}"
     )
+    db_product = session.get(Product, product_id)
 
-    updated_product = update_product_quantity(
-        product_id=product_id,
-        new_quantity=update_data.quantity,
-        inventory_data=INVENTORY_DATA,
-    )
-
-    if updated_product is None:
+    if not db_product:
         # Raise 404 if the product to update was not found
         logger.warning(f"Product {product_id} not found for update - returning 404")
         raise HTTPException(
@@ -193,10 +190,21 @@ def update_product(product_id: int, update_data: ProductUpdate):
             detail=f"Product with ID {product_id} not found.",
         )
 
+    # Update only the fields provided in update_data
+    product_data = update_data.model_dump(exclude_unset=True)
+
+    # Update the database product with the new data
+    for key, value in product_data.items():
+        setattr(db_product, key, value)
+
+    session.add(db_product)
+    session.commit()
+    session.refresh(db_product)
+
     logger.info(
-        f"Product {product_id} updated successfully (new quantity: {updated_product['quantity']}, in_stock: {updated_product['in_stock']})"
+        f"Product {product_id} updated successfully (new quantity: {db_product.quantity}, in_stock: {db_product.in_stock})"
     )
-    return updated_product
+    return db_product
 
 
 # ----------------------------------------------------
