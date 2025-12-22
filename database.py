@@ -5,13 +5,16 @@ Handles PostgreSQL connection using SQLModel.
 """
 
 import os
+from dotenv import load_dotenv
 from typing import Annotated, Generator, Any
 from fastapi import Depends
 from sqlmodel import Session, create_engine, SQLModel
 
-# Connection string to PostgreSQL database
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg2://...")
+# Load environment variables from .env file
+load_dotenv()
 
+# Retrieve the secure URL
+DATABASE_URL = os.getenv("DATABASE_URL")
 # Create the SQLAlchemy engine
 engine = create_engine(DATABASE_URL, echo=True)
 
