@@ -4,12 +4,13 @@ Database configuration for the Retail Inventory API.
 Handles PostgreSQL connection using SQLModel.
 """
 
+import os
 from typing import Annotated, Generator, Any
 from fastapi import Depends
 from sqlmodel import Session, create_engine, SQLModel
 
 # Connection string to PostgreSQL database
-DATABASE_URL = "postgresql+psycopg2://user:..Mystis_7337@localhost/retail_inventory"
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg2://...")
 
 # Create the SQLAlchemy engine
 engine = create_engine(DATABASE_URL, echo=True)
