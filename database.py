@@ -1,7 +1,9 @@
 """
-Database configuration for the Retail Inventory API.
+Database Infrastructure: Connection and Session Management.
 
-Handles PostgreSQL connection using SQLModel.
+This module configures the SQLAlchemy engine via SQLModel and defines
+the dependency injection pattern used by the API endpoints to interact
+with the PostgreSQL database.
 """
 
 import os

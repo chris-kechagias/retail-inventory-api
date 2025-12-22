@@ -1,8 +1,9 @@
 """
 API Gateway: FastAPI application entry point.
 
-Defines the HTTP routes and acts as the Presentation Layer,
-connecting the client requests to the Business Logic (inventory_service).
+This module defines the RESTful endpoints for the Retail Inventory system.
+It acts as the Presentation Layer, handling HTTP requests/responses and
+orchestrating data persistence through SQLModel and PostgreSQL.
 """
 
 # Standard Library Imports
@@ -19,46 +20,39 @@ from models import Product, ProductCreate, ProductUpdate
 from database import create_db_and_tables, SessionDep
 
 # ----------------------------------------------------
-# LOGGING & DATA INITIALIZATION
+# LOGGING & INITIALIZATION
 # ----------------------------------------------------
 
-# Run the logging setup immediately.
 import logger_config
 
-# Get logger instance for this module (main.py)
 logger = logging.getLogger(__name__)
 
 
-# ----------------------------------------------------
-# 1. Initialization and Data Loading
-# ----------------------------------------------------
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Handles the application startup and shutdown events.
+
+    Ensures the database engine is ready and tables are created before
+    the API starts accepting traffic. This replaces the deprecated @app.on_event logic.
+    """
+    logger.info(
+        "Lifespan Startup: Verifying database connectivity and creating tables."
+    )
+    create_db_and_tables()
+    yield
+    logger.info("Lifespan Shutdown: Cleaning up resources.")
+
 
 app = FastAPI(
     title="Retail Inventory API",
-    description=(
-        "An MVP REST API for tracking retail products, "
-        "built with FastAPI and Pydantic."
-    ),
-    version="1.0.0",
+    description="A robust FastAPI service for managing warehouse stock using PostgreSQL and SQLModel.",
+    version="2.0.0",  # Updated to reflect database-backed milestone
+    lifespan=lifespan,
 )
 
-
-# A simple log message to confirm startup
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Startup logic: Create database and tables
-    logger.info("Starting up: Creating database tables...")
-    create_db_and_tables()
-    yield
-    # Shutdown logic: (Add cleanup here if needed)
-    logger.info("Shutting down...")
-
-
-app = FastAPI(lifespan=lifespan)
-
-
 # ----------------------------------------------------
-# 2. Endpoints (Analytics Route + GET Routes)
+# 1. ANALYTICS ROUTES
 # ----------------------------------------------------
 
 
@@ -69,15 +63,15 @@ app = FastAPI(lifespan=lifespan)
 )
 def get_inventory_value(session: SessionDep):
     """
-    Calculate the total value of all products in stock.
+    Calculates the aggregate value (price * quantity) of all inventory.
 
-    Performs the calculation (price * quantity) directly within the
-    SQL engine for maximum performance. Returns 0.0 if the inventory is empty.
+    Utilizes SQL-side aggregation (func.sum) to ensure high performance
+    even with thousands of rows, avoiding Python-level loops.
     """
-    logger.info("Calculating total inventory value via database-side aggregation")
+    logger.info("Executing database-side aggregation for total inventory value.")
 
+    # Calculate (price * quantity) per row and sum them up in the DB engine
     statement = select(func.sum(Product.price * Product.quantity))
-
     result = session.exec(statement).one()
     total_value = result or 0.0
 
@@ -86,10 +80,15 @@ def get_inventory_value(session: SessionDep):
     return {"Total Inventory Value $": total_value}
 
 
+# ----------------------------------------------------
+# 2. READ ROUTES
+# ----------------------------------------------------
+
+
 @app.get(
     "/products",
     response_model=List[Product],
-    summary="Retrieve all products in the inventory",
+    summary="List all products with pagination",
 )
 def get_all_products(
     session: SessionDep,
@@ -97,24 +96,26 @@ def get_all_products(
     limit: Annotated[int, Query(le=100)] = 100,
 ):
     """
-    GET /products
-    Returns the complete list of all products in the inventory.
+    Retrieves a list of products using offset/limit pagination.
+
+    Args:
+        offset: The number of items to skip.
+        limit: The maximum number of items to return (capped at 100).
     """
     statement = select(Product).offset(offset).limit(limit)
     products = session.exec(statement).all()
-    logger.info(f"Fetching products: offset={offset}, limit={limit}")
+    logger.info(f"Retrieved {len(products)} products from database.")
     return products
 
 
 @app.get(
     "/products/{product_id}",
     response_model=Product,
-    summary="Retrieve a single product by its unique ID",
+    summary="Get product by ID",
 )
 def get_product(product_id: int, session: SessionDep) -> Product:
     """
-    GET /products/{product_id}
-    Returns a single product by its unique ID. Raises 404 if not found.
+    Fetches a single product record. Raises 404 if the ID does not exist.
     """
     logger.info(f"Fetching product with ID: {product_id}")
     product = session.get(Product, product_id)
@@ -132,7 +133,7 @@ def get_product(product_id: int, session: SessionDep) -> Product:
 
 
 # ----------------------------------------------------
-# 3. Endpoints (POST Routes)
+# 3. WRITE ROUTES (POST/PATCH/DELETE)
 # ----------------------------------------------------
 
 
@@ -144,42 +145,39 @@ def get_product(product_id: int, session: SessionDep) -> Product:
 )
 def create_product(product: ProductCreate, session: SessionDep) -> Product:
     """
-    Create a new product in the database.
+    Persists a new product record.
 
-    The input uses ProductCreate (no ID required), and the database
-    automatically generates a unique primary key upon commit.
+    Validates input using ProductCreate and maps it to the Product table model.
+    The database automatically handles ID generation and stock-status logic.
     """
     logger.info(
         f"Creating new product: {product.name} (price: ${product.price}, quantity: {product.quantity})"
     )
 
-    # 1. Convert ProductCreate (Schema) to Product (Database Model)
+    # 1. Converts the Pydantic schema into a SQLModel Table instance
     db_product = Product.model_validate(product)
     # 2. Add to session and commit to persist
     session.add(db_product)
     session.commit()
-    session.refresh(db_product)  # Refresh to get the generated ID
+    session.refresh(db_product)  # Syncs db_product with the DB-generated ID
 
     logger.info(f"Product created successfully with ID: {db_product.id}")
     return db_product
 
 
-# ----------------------------------------------------
-# 4. Endpoints (PUT Route)
-# ----------------------------------------------------
-
-
 @app.patch(
     "/products/{product_id}",
     response_model=Product,
-    summary="Update the quantity of an existing product",
+    summary="Partial update of a product's quantity and/or stock status",
 )
 def update_product(
     product_id: int, update_data: ProductUpdate, session: SessionDep
 ) -> Product:
     """
-    Updates the quantity of an existing product by ID.
-    Raises 404 if the product is not found.
+    Updates specific fields of an existing product.
+
+    Uses 'exclude_unset=True' to ensure only fields provided in the
+    request body are modified, preserving other existing values.
     """
     logger.info(
         f"Updating product {product_id} with new quantity: {update_data.quantity}"
@@ -211,20 +209,15 @@ def update_product(
     return db_product
 
 
-# ----------------------------------------------------
-# 5. Endpoints (DELETE Route)
-# ----------------------------------------------------
-
-
 @app.delete(
     "/products/{product_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete a product from the inventory",
+    summary="Remove a product",
 )
 def delete_product(product_id: int, session: SessionDep) -> None:
     """
-    Deletes a product by its unique ID.
-    Raises 404 if the product is not found.
+    Deletes a product from the database.
+    Returns HTTP 204 to indicate successful deletion with no response body.
     """
     logger.info(f"Attempting to delete product {product_id}")
     db_product = session.get(Product, product_id)
