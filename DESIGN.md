@@ -333,7 +333,7 @@ FastAPI Exception Handler ──→ JSON Error Response
 │  - Structured Relational Tables         │
 │  - Database-side math (func.sum)        │
 └─────────────────────────────────────────┘
-
+```
 ---
 
 ## 🛠️ Key Refactoring Decisions
