@@ -138,27 +138,26 @@ def get_product(product_id: int, session: SessionDep) -> Product:
     status_code=status.HTTP_201_CREATED,
     summary="Add a new product to the inventory",
 )
-def create_product(product: Product):
+def create_product(product: ProductCreate, session: SessionDep) -> Product:
     """
-    Receives product data, assigns a unique ID, and saves it to the inventory.
+    Create a new product in the database.
 
-    The Pydantic 'Product' model automatically validates the input data (e.g.,
-    price and quantity are > 0).
+    The input uses ProductCreate (no ID required), and the database
+    automatically generates a unique primary key upon commit.
     """
     logger.info(
         f"Creating new product: {product.name} (price: ${product.price}, quantity: {product.quantity})"
     )
 
-    # Call the Service Layer for business logic
-    created_product = add_product(
-        # We use .model_dump() to convert the Pydantic object back into a
-        # standard Python dict
-        new_product_data=product.model_dump(),
-        inventory_data=INVENTORY_DATA,  # Pass the global in-memory state
-    )
+    # 1. Convert ProductCreate (Schema) to Product (Database Model)
+    db_product = Product.model_validate(product)
+    # 2. Add to session and commit to persist
+    session.add(db_product)
+    session.commit()
+    session.refresh(db_product)  # Refresh to get the generated ID
 
-    logger.info(f"Product created successfully with ID: {created_product['id']}")
-    return created_product
+    logger.info(f"Product created successfully with ID: {db_product.id}")
+    return db_product
 
 
 # ----------------------------------------------------
