@@ -217,22 +217,24 @@ def update_product(
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a product from the inventory",
 )
-def delete_product_endpoint(product_id: int) -> None:
+def delete_product(product_id: int, session: SessionDep) -> None:
     """
     Deletes a product by its unique ID.
     Raises 404 if the product is not found.
     """
     logger.info(f"Attempting to delete product {product_id}")
+    db_product = session.get(Product, product_id)
 
-    deleted = delete_product(product_id=product_id, inventory_data=INVENTORY_DATA)
-
-    if not deleted:
+    if not db_product:
         # Raise 404 if the product to delete was not found
         logger.warning(f"Product {product_id} not found for deletion - returning 404")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Product with ID {product_id} not found.",
         )
+
+    session.delete(db_product)
+    session.commit()
 
     logger.info(f"Product {product_id} deleted successfully")
     return None  # 204 No Content does not return a body
