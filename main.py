@@ -39,6 +39,8 @@ async def lifespan(app: FastAPI):
     logger.info(
         "Lifespan Startup: Verifying database connectivity and creating tables."
     )
+    # This replaces the old @app.on_event("startup") logic.
+    # It ensures the database is ready before the first request arrives.
     create_db_and_tables()
     yield
     logger.info("Lifespan Shutdown: Cleaning up resources.")

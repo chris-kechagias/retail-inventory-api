@@ -304,11 +304,64 @@ FastAPI Exception Handler ──→ JSON Error Response
 
 ## 🔮 Future Architectural Improvements
 
-### **Phase 5: Database Integration**
+## 🔄 Phase 5: The Great Refactor (PostgreSQL Migration) ✅
 
-- Replace JSON with PostgreSQL
-- Add SQLAlchemy ORM
-- Implement database migrations (Alembic)
+**Decision:** Replace JSON file storage with a professional Relational Database Management System (RDBMS).
+
+### **Why the change?**
+
+- ❌ **JSON Limitations:** File locking issues, no concurrent writes, manual ID incrementing.
+- ✅ **Postgres Benefits:** Atomic transactions, relational integrity, high-speed aggregations (SQL-side), and persistent storage that survives server restarts.
+
+### **Architectural Evolution:**
+
+```text
+┌─────────────────────────────────────────┐
+│      Presentation Layer (main.py)       │  ← No Change (FastAPI)
+└──────────────┬──────────────────────────┘
+               │
+               ↓
+┌─────────────────────────────────────────┐
+│      Logic & ORM Layer (models.py)      │  ← REPLACED Service Layer
+│  - SQLModel (Pydantic + SQLAlchemy)     │
+│  - Automatic Validation                 │
+└──────────────┬──────────────────────────┘
+               │
+               ↓
+┌─────────────────────────────────────────┐
+│     Data Layer (PostgreSQL / RDS)       │  ← REPLACED JSON File
+│  - Structured Relational Tables         │
+│  - Database-side math (func.sum)        │
+└─────────────────────────────────────────┘
+
+---
+
+## 🛠️ Key Refactoring Decisions
+
+### **1. Merging Service and Models**
+- **Old Way:** `inventory_service.py` had to manually find the max ID and recalculate `in_stock`.
+- **New Way:** Used **SQLModel inheritance**. The database now handles IDs via `primary_key=True`, and the API handles `in_stock` logic via schema validation.
+
+### **2. Database-Side Aggregation**
+- **Old Way:** Loading the entire JSON into Python memory just to sum the prices.
+- **New Way:** Using `select(func.sum(Product.price * Product.quantity))`. The database does the heavy lifting, returning only the final number to the API.
+
+### **3. Dependency Injection**
+- **Decision:** Implemented `SessionDep` using FastAPI's `Depends`.
+- **Rationale:** Ensures every request gets its own database connection and—more importantly—closes it when the request is done, preventing memory leaks.
+
+---
+
+## 🏗️ New Data Contract (SQLModel)
+
+| Feature | JSON Version (v1.0) | Postgres Version (v2.0) |
+| :--- | :--- | :--- |
+| **Storage** | `products.json` | **PostgreSQL 18** |
+| **ID Gen** | Manual `max()` in Python | **Database Serial / Autoincrement** |
+| **Concurrency** | One user at a time | **Multiprocessing Ready** |
+| **Deployment** | Local Disk | **Cloud-Ready (Render + Neon/RDS)** |
+
+---
 
 ### **Phase 6: Advanced Features**
 
@@ -351,31 +404,52 @@ FastAPI Exception Handler ──→ JSON Error Response
 
 ---
 
-## 🎓 Skills Demonstrated
+## 🎓 Skills Demonstrated (The Evolution)
+
+### **v1.0.0 - The Prototype (File-Based)**
+*Focused on API fundamentals and clean architectural separation.*
 
 | Skill Category            | Specific Skills                                           |
 | ------------------------- | --------------------------------------------------------- |
-| **Backend Development**   | FastAPI, RESTful API design, HTTP semantics               |
+| **Backend Development** | FastAPI, RESTful API design, HTTP semantics               |
 | **Software Architecture** | Three-tier architecture, separation of concerns           |
-| **Data Validation**       | Pydantic models, Field constraints, type safety           |
-| **Error Handling**        | Try-except blocks, HTTPException, proper status codes     |
-| **Logging**               | Python logging module, structured logs, multiple handlers |
-| **Code Quality**          | Type hints, docstrings, meaningful variable names         |
-| **Version Control**       | Git, meaningful commits, clean repo structure             |
-| **Documentation**         | README, design docs, inline comments                      |
+| **Data Validation** | Pydantic models, Field constraints, type safety           |
+| **Error Handling** | Try-except blocks, HTTPException, proper status codes     |
+| **Logging** | Python logging module, structured logs, multiple handlers |
+| **Code Quality** | Type hints, docstrings, meaningful variable names         |
+| **Version Control** | Git, meaningful commits, clean repo structure             |
+| **Documentation** | README, design docs, inline comments                      |
+
+### **v2.0.0 - The Professional Upgrade (Database-Driven)**
+*Focused on scalability, relational data, and modern Python patterns.*
+
+| Skill Category            | Specific Skills                                           |
+| ------------------------- | --------------------------------------------------------- |
+| **Database Engineering** | **PostgreSQL 18**, Relational Schema Design, SQL Aggregations |
+| **ORM & Persistence** | **SQLModel**, SQLAlchemy Engine, Session & Transaction management |
+| **Modern Async Patterns** | **Lifespan Context Managers** (replacing deprecated events) |
+| **Dependency Injection** | FastAPI `Depends` with **Annotated** type hints           |
+| **Security & Config** | Environment Secret Management (**`.env`**, `python-dotenv`) |
+| **Data Integrity** | Database-level Primary Keys, Indexing, and Auto-increment |
+| **Advanced Querying** | Database-side math (`func.sum`), Offset/Limit Pagination   |
+| **Dev Environment** | pgAdmin 4 for Database Administration & Data Visualization |
 
 ---
 
 ## 📖 References & Resources
 
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [Pydantic Documentation](https://docs.pydantic.dev/)
+- [SQLModel Documentation](https://sqlmodel.tiangolo.com/)
+- [PostgreSQL Official Documentation](https://www.postgresql.org/docs/)
+- [Python Logging Cookbook](https://docs.python.org/3/howto/logging.html)
 - [REST API Best Practices](https://restfulapi.net/)
-- [HTTP Status Code Definitions](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
-- [Three-Tier Architecture](https://en.wikipedia.org/wiki/Multitier_architecture)
+- [Git Configuration (.gitignore) Guide](https://git-scm.com/docs/gitignore)
+- [Dockerizing a FastAPI App](https://fastapi.tiangolo.com/deployment/docker/)
+- [Heroku/Render Procfile Documentation](https://devcenter.heroku.com/articles/procfile)
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** December 8, 2025  
-**Status:** Production-ready MVP, deployed on Render
+**Document Version:** 2.0.0
+**Last Updated:** December 23, 2025
+**Status:** Database-driven Architecture (v2.0) - Refactoring Complete
+```

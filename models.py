@@ -41,6 +41,9 @@ class Product(ProductBase, table=True):
     PostgreSQL table. This represents the 'Source of Truth' in the DB.
     """
 
+    # This class serves a dual purpose:
+    # 1. Pydantic Model (API Validation)
+    # 2. SQLAlchemy Model (Database Table Mapping)
     id: Optional[int] = Field(
         default=None,
         primary_key=True,

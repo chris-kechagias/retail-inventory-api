@@ -15,22 +15,36 @@ from sqlmodel import Session, create_engine, SQLModel
 # Load environment variables from .env file
 load_dotenv()
 
-# Retrieve the secure URL
+# Retrieve the PostgreSQL connection string
 DATABASE_URL = os.getenv("DATABASE_URL")
-# Create the SQLAlchemy engine
+# The Engine is the 'source' of connectivity.
+# echo=True logs all generated SQL statements to the terminal—great for debugging!
 engine = create_engine(DATABASE_URL, echo=True)
 
 
 def create_db_and_tables():
-    """Create database tables based on the defined SQLModel models."""
+    """
+    Scans all SQLModel classes with 'table=True' and creates them in PostgreSQL.
+
+    This is called during the FastAPI 'lifespan' startup phase to ensure
+    the database schema stays in sync with your Python models.
+    """
     SQLModel.metadata.create_all(engine)
 
 
 def get_session():
-    """Get a new database session."""
+    """
+    Provides a transactional scope for database operations.
+
+    Yields a Session object and ensures it is properly closed after the
+    request is finished, even if an error occurs.
+    """
+    # Use of Generator here so FastAPI can handle the 'teardown'.
+    # This prevents the database from running out of connections.
     with Session(engine) as session:
         yield session
 
 
+# SessionDep is a type alias that simplifies dependency injection in main.py.
+# It tells FastAPI: "Whenever you see SessionDep, call get_session() and give me the result."
 SessionDep = Annotated[Session, Depends(get_session)]
-"""Dependency to inject a database session into FastAPI routes."""
