@@ -104,13 +104,13 @@ DATABASE_URL=postgresql+psycopg2://postgres:YOUR_PASSWORD@localhost/retail_inven
 fastapi dev main.py
 ```
 
-API available at: **http://127.0.0.1:8000**
+API available at: **[http://127.0.0.1:8000](https://retail-inventory-api-chris.onrender.com)**
 
 ### 5. Interactive Documentation
 
-- **Swagger UI:** http://127.0.0.1:8000/docs
-- **ReDoc:** http://127.0.0.1:8000/redoc
-
+- **Swagger UI:** [http://127.0.0.1:8000/docs](https://retail-inventory-api-chris.onrender.com/docs)
+- **ReDoc:** [http://127.0.0.1:8000/redoc
+](https://retail-inventory-api-chris.onrender.com/redoc)
 ---
 
 ## 📝 Example Usage
