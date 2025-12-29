@@ -1,0 +1,22 @@
+### GET /products/total_value
+GET http://localhost:8000/products/total_value
+
+### GET /products
+GET http://localhost:8000/products
+
+### GET /products/{product_id}
+GET http://localhost:8000/products/1
+
+### DELETE /products/{product_id}
+DELETE http://localhost:8000/products/1
+
+### POST /products
+POST http://localhost:8000/products
+Content-Type: application/json
+
+{
+  "name": "Product 1",
+  "price": 100,
+  "quantity": 100,
+  "in_stock": true
+}
