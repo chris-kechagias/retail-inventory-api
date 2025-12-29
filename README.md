@@ -4,7 +4,7 @@
 
 [![GitHub](https://img.shields.io/badge/GitHub-Repo-blue?style=flat-square&logo=github)](https://github.com/chris-kechagias/retail-inventory-api)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square&logo=python)](https://www.python.org/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-336791?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-05998b?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![SQLModel](https://img.shields.io/badge/SQLModel-0.0.22-00b0ff?style=flat-square&logo=pydantic)](https://sqlmodel.tiangolo.com/)
 [![Dockerfile](https://img.shields.io/badge/container-Dockerfile-2496ED?style=flat-square&logo=docker)](https://docs.docker.com/engine/reference/builder/)
@@ -24,32 +24,96 @@ A **production-ready REST API** for retail inventory management, demonstrating m
 
 ---
 
-## 💡 Why I Built This
+## 🚀 Getting Started
 
-This project demonstrates:
+Follow these steps to get the project running on your local machine.
 
-- **RESTful API design** with proper HTTP semantics (201 for creation, 204 for deletion, 404 for not found)
-- **PostgreSQL integration** with SQLModel ORM for type-safe database operations
-- **Production-ready patterns** including dependency injection, environment variables, and structured logging
-- **SQLModel** - combining Pydantic validation + SQLAlchemy ORM in a single class
-- **Database-side aggregation** - using SQL `func.sum()` for performant calculations
+### 1. Prerequisites
 
-Built as part of my career transition from retail management to AI Engineering. This v2.0 upgrade from JSON to PostgreSQL demonstrates database integration skills essential for production ML systems.
+- **Docker & Docker Compose** (for running the database)
+- **Python 3.11+**
+- **Git**
 
-**Background:** 15 years in retail operations + B.Eng. in Automation & Control Engineering (2010) + AI thesis on neural network computer vision.
+### 2. Installation
+
+Clone the repository and navigate to the project folder:
+
+```bash
+git clone https://github.com/chris-kechagias/retail-inventory-api.git
+cd retail-inventory-api
+```
+
+### 3. Environment Setup (Virtual Environment)
+
+It is highly recommended (and often required on newer systems) to use a Python virtual environment to manage dependencies.
+
+```bash
+# 1. Create a virtual environment named 'venv'
+python3 -m venv venv
+
+# 2. Activate the virtual environment
+source venv/bin/activate  # macOS/Linux
+# .\venv\Scripts\activate  # Windows
+
+# 3. Install dependencies
+pip install -r requirements.txt
+pip install "fastapi[standard]"
+```
+
+### 4. Database Setup (Docker)
+
+Start the PostgreSQL database using Docker Compose. This containerizes the database so you don't need to install PostgreSQL directly on your system.
+
+```bash
+# Start the database in the background
+docker-compose up -d db
+```
+
+_Note: The database runs on port `5432`._
+
+### 5. Configuration
+
+Create a `.env` file in the project root to tell the application how to connect to the local database:
+
+**`.env` content:**
+
+```env
+DATABASE_URL=postgresql://postgres:password@localhost:5432/retail_inventory_db
+```
+
+### 6. Run the API
+
+Start the FastAPI development server. The application is configured to run on port **8000**.
+
+```bash
+# Ensure your virtual environment is activated
+fastapi dev main.py --port 8000
+```
+
+- **API Root:** [http://127.0.0.1:8000](http://127.0.0.1:8000)
+- **Interactive Docs (Swagger UI):** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- **ReDoc:** [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
 
 ---
 
-## 🛠️ Tech Stack
+## 🐳 Running Fully in Docker
 
-| Component     | Technology                          | Purpose                                        |
-| :------------ | :---------------------------------- | :--------------------------------------------- |
-| **Language**  | Python 3.11+                        | Primary development language.                  |
-| **Framework** | FastAPI                             | High-performance async REST API framework.     |
-| **ORM**       | SQLModel                            | Combines Pydantic validation + SQLAlchemy ORM. |
-| **Database**  | PostgreSQL 18                       | Production-grade relational database.          |
-| **Server**    | Uvicorn                             | ASGI server for running the application.       |
-| **Logging**   | Python logging (`logger_config.py`) | Structured logging to console and file.        |
+Alternatively, you can run the entire stack (App + Database) purely in Docker without local Python installation:
+
+<!--  -->
+<!--  -->
+
+<!--  -->
+<!--  -->
+<!--  -->
+<!--  -->
+<!--  -->
+
+```bash
+docker-compose up --build
+```
+
+The API will be available at [http://localhost:8000](http://localhost:8000).
 
 ---
 
@@ -66,54 +130,7 @@ Built as part of my career transition from retail management to AI Engineering. 
 
 ---
 
-## 🚀 Getting Started
-
-### 1. Prerequisites
-
-- **Python 3.11+**
-- **PostgreSQL 18** installed and running
-- **Git**
-
-### 2. Installation
-
-```bash
-git clone https://github.com/chris-kechagias/retail-inventory-api.git
-cd retail-inventory-api
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-### 3. Database Setup
-
-1. Create a PostgreSQL database:
-
-```sql
-CREATE DATABASE retail_inventory;
-```
-
-2. Create a `.env` file in the project root:
-
-```
-DATABASE_URL=postgresql+psycopg2://postgres:YOUR_PASSWORD@localhost/retail_inventory
-```
-
-### 4. Run the API
-
-```bash
-fastapi dev main.py
-```
-
-API available at: **[http://127.0.0.1:8000](https://retail-inventory-api-chris.onrender.com)**
-
-### 5. Interactive Documentation
-
-- **Swagger UI:** [http://127.0.0.1:8000/docs](https://retail-inventory-api-chris.onrender.com/docs)
-- **ReDoc:** [http://127.0.0.1:8000/redoc
-](https://retail-inventory-api-chris.onrender.com/redoc)
----
-
-## 📝 Example Usage
+## 📝 Example Usage (Port 8000)
 
 ### Create a Product
 
@@ -161,6 +178,19 @@ curl -X DELETE "http://127.0.0.1:8000/products/1"
 
 ---
 
+## 🛠️ Tech Stack
+
+| Component     | Technology                          | Purpose                                        |
+| :------------ | :---------------------------------- | :--------------------------------------------- |
+| **Language**  | Python 3.11+                        | Primary development language.                  |
+| **Framework** | FastAPI                             | High-performance async REST API framework.     |
+| **ORM**       | SQLModel                            | Combines Pydantic validation + SQLAlchemy ORM. |
+| **Database**  | PostgreSQL 15                       | Production-grade relational database.          |
+| **Server**    | Uvicorn                             | ASGI server for running the application.       |
+| **Logging**   | Python logging (`logger_config.py`) | Structured logging to console and file.        |
+
+---
+
 ## 🏗️ Project Structure
 
 ```
@@ -170,29 +200,16 @@ retail-inventory-api/
 ├── database.py               # PostgreSQL engine & session dependency
 ├── logger_config.py          # Logging configuration
 ├── requirements.txt          # Python dependencies
-├── .env                      # Environment variables (not in git)
+├── .env                      # Environment variables (local config)
+├── docker-compose.yml        # Container orchestration (DB + App)
+├── Dockerfile                # App container definition
 ├── LICENSE                   # MIT License
 ├── README.md                 # This file
 ├── DESIGN.md                 # Architecture & migration documentation
-├── .gitignore                # Git ignore rules
-├── Dockerfile                # Container build instructions
 ├── Procfile                  # Startup command for Render
 └── logs/
     └── app.log               # Application logs
 ```
-
----
-
-## 🔮 Future Enhancements
-
-- [x] Replace JSON storage with PostgreSQL database ✅
-- [x] Implement pagination for product listings ✅
-- [ ] Add user authentication & authorization (JWT)
-- [ ] Add search & filter functionality
-- [ ] Deploy updated version to Render
-- [ ] Add CI/CD pipeline (GitHub Actions)
-- [ ] Implement rate limiting
-- [ ] Add comprehensive unit & integration tests
 
 ---
 
@@ -204,9 +221,9 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ## 👤 Author
 
-**Chris Kechagias**  
-Automation Engineer transitioning to AI Engineering  
-📍 Thessaloniki, Greece  
+**Chris Kechagias**
+Automation Engineer transitioning to AI Engineering
+📍 Thessaloniki, Greece
 🔗 [GitHub](https://github.com/chris-kechagias) | [LinkedIn](https://www.linkedin.com/in/chkechagias)
 
 ---
@@ -214,5 +231,3 @@ Automation Engineer transitioning to AI Engineering
 ## 🙏 Acknowledgments
 
 Built as part of a self-directed AI Engineering roadmap (Nov 2025 - Sep 2026). This v2.0 release represents Phase 0 completion - demonstrating PostgreSQL integration before advancing to LLM engineering and RAG systems in Phase 1.
-
-Special thanks to FastAPI, SQLModel, and PostgreSQL communities for excellent documentation.
