@@ -53,6 +53,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+@app.get("/")
+def read_root():
+    return {
+        "message": "Retail Inventory API",
+        "version": "2.0.0",
+        "docs": "/docs",
+        "endpoints": "/products"
+    }
+
 # ----------------------------------------------------
 # 1. ANALYTICS ROUTES
 # ----------------------------------------------------
