@@ -67,6 +67,7 @@ A REST API for managing retail product inventory, built as part of my AI Enginee
 This project represents Phase 0 completion (Nov-Dec 2025) in a structured 10-month career transition from retail operations management to AI Engineering. Built with 15 years of retail inventory management experience, applying real-world operational knowledge to technical implementation.
 
 **🔗 Live API:** https://retail-inventory-api-chris.onrender.com
+
 **📚 Interactive Docs:** https://retail-inventory-api-chris.onrender.com/docs
 
 ---
