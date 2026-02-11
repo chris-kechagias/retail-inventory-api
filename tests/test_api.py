@@ -23,3 +23,21 @@ def test_create_product():
     assert data["name"] == "Test Laptop"
     assert data["in_stock"] == True
     assert "id" in data
+
+def test_read_single_product():
+    """Test that GET /products/{product_id} returns a single product."""
+    payload = {
+        "name": "Single Test Item",
+        "price": 25.00,
+        "quantity": 7,
+        "in_stock": True
+    }
+    create_response = client.post("/products", json=payload)
+    product_id = create_response.json()["id"]
+
+    read_response = client.get(f"/products/{product_id}")
+
+    assert read_response.status_code == 200
+    assert read_response.json()["name"] == "Single Test Item"
+    assert read_response.json()["id"] == product_id
+
