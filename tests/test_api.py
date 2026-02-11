@@ -41,3 +41,8 @@ def test_read_single_product():
     assert read_response.json()["name"] == "Single Test Item"
     assert read_response.json()["id"] == product_id
 
+def test_read_nonexistent_product():
+    """Test that GET /products/{product_id} returns 404 for non-existent product."""
+    response = client.get("/products/999999")  
+    assert response.status_code == 404
+    assert "not found" in response.json()["detail"].lower()
