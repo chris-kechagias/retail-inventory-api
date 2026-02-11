@@ -23,17 +23,33 @@ REST API for retail inventory management built while learning modern Python back
 
 ## Table of Contents
 
-- [About](#about)
-- [Features](#features)
-- [Demo](#demo)
-- [Installation](#installation)
-- [Usage](#usage)
-- [API Endpoints](#api-endpoints)
-- [Configuration](#configuration)
-- [Project Structure](#project-structure)
-- [Tech Stack Details](#tech-stack-details)
-- [License](#license)
-- [Acknowledgements](#acknowledgements)
+- [🛒 Retail Product Inventory API](#-retail-product-inventory-api)
+  - [Tech Stack](#tech-stack)
+  - [Status](#status)
+  - [Table of Contents](#table-of-contents)
+  - [About](#about)
+  - [Features](#features)
+  - [Demo](#demo)
+  - [Installation](#installation)
+    - [Prerequisites](#prerequisites)
+    - [Clone the Repository](#clone-the-repository)
+    - [Option 1: Local Setup (Virtual Environment)](#option-1-local-setup-virtual-environment)
+    - [Option 2: Full Docker Setup](#option-2-full-docker-setup)
+  - [Usage](#usage)
+    - [Testing the API](#testing-the-api)
+  - [API Endpoints](#api-endpoints)
+  - [Testing](#testing)
+    - [Running Tests](#running-tests)
+    - [Test Suite](#test-suite)
+  - [Configuration](#configuration)
+    - [Environment Variables](#environment-variables)
+    - [Docker Compose Configuration](#docker-compose-configuration)
+  - [Project Structure](#project-structure)
+    - [Architecture Overview](#architecture-overview)
+  - [Tech Stack Details](#tech-stack-details)
+  - [License](#license)
+  - [Acknowledgements](#acknowledgements)
+  - [Author](#author)
 
 ---
 
@@ -47,10 +63,10 @@ A REST API for managing retail product inventory, built as part of my AI Enginee
 - Learn Docker containerization for deployment
 - Build portfolio demonstrating backend engineering skills
 
-**Context:**  
+**Context:**
 This project represents Phase 0 completion (Nov-Dec 2025) in a structured 10-month career transition from retail operations management to AI Engineering. Built with 15 years of retail inventory management experience, applying real-world operational knowledge to technical implementation.
 
-**🔗 Live API:** https://retail-inventory-api-chris.onrender.com  
+**🔗 Live API:** https://retail-inventory-api-chris.onrender.com
 **📚 Interactive Docs:** https://retail-inventory-api-chris.onrender.com/docs
 
 ---
@@ -58,13 +74,15 @@ This project represents Phase 0 completion (Nov-Dec 2025) in a structured 10-mon
 ## Features
 
 -  Complete CRUD operations for product inventory
--  PostgreSQL database with SQLModel ORM
+-  PostgreSQL database with SQLModel ORM (Supabase)
 -  Docker containerization with Docker Compose
 -  Comprehensive logging infrastructure
 -  Pydantic validation on all endpoints
 -  Deployed on Render with live documentation
 -  SQL-based total inventory value calculation
 -  Pagination support for product listings
+-  Health check endpoint with uptime tracking
+-  Comprehensive test suite with pytest
 
 ---
 
@@ -72,7 +90,7 @@ This project represents Phase 0 completion (Nov-Dec 2025) in a structured 10-mon
 
 **Interactive API Documentation:**
 
-Visit the live Swagger UI to test all endpoints directly in your browser:  
+Visit the live Swagger UI to test all endpoints directly in your browser:
 👉 **https://retail-inventory-api-chris.onrender.com/docs**
 
 **Example API Response:**
@@ -218,17 +236,64 @@ curl -X DELETE "http://127.0.0.1:8000/products/1"
 
 ## API Endpoints
 
-| Method | Endpoint | Description | Status Codes |
-|--------|----------|-------------|--------------|
-| GET | `/` | API info and documentation links | 200 |
-| GET | `/products` | List all products with pagination | 200 |
-| GET | `/products/{id}` | Get single product by ID | 200, 404 |
-| GET | `/products/total_value` | Calculate total inventory value (SQL) | 200 |
-| POST | `/products` | Create new product | 201 |
-| PATCH | `/products/{id}` | Partial update of product | 200, 404 |
-| DELETE | `/products/{id}` | Delete product by ID | 204, 404 |
+| Method | Endpoint                | Description                                   | Status Codes |
+| ------ | ----------------------- | --------------------------------------------- | ------------ |
+| GET    | `/`                     | API info and documentation links              | 200          |
+| GET    | `/health`               | Health check with status, version, and uptime | 200          |
+| GET    | `/products`             | List all products with pagination             | 200          |
+| GET    | `/products/{id}`        | Get single product by ID                      | 200, 404     |
+| GET    | `/products/total_value` | Calculate total inventory value (SQL)         | 200          |
+| POST   | `/products`             | Create new product                            | 201          |
+| PATCH  | `/products/{id}`        | Partial update of product                     | 200, 404     |
+| DELETE | `/products/{id}`        | Delete product by ID                          | 204, 404     |
 
 **All endpoints documented interactively at `/docs`**
+
+---
+
+## Testing
+
+The project includes a comprehensive test suite using **pytest** and FastAPI's **TestClient**.
+
+### Running Tests
+
+**1. Install test dependencies:**
+
+```bash
+pip install pytest pytest-cov
+```
+
+**2. Run all tests:**
+
+```bash
+pytest tests/
+```
+
+**3. Run tests with coverage:**
+
+```bash
+pytest tests/ --cov=. --cov-report=term-missing
+```
+
+### Test Suite
+
+The test suite (`tests/test_api.py`) includes:
+
+| Test                            | Purpose                                                       |
+| ------------------------------- | ------------------------------------------------------------- |
+| `test_health`                   | Validates health endpoint returns status, version, and uptime |
+| `test_cloud_connection`         | Verifies database connection via GET /products                |
+| `test_create_product`           | Tests product creation with POST /products                    |
+| `test_read_single_product`      | Tests retrieving a specific product by ID                     |
+| `test_read_nonexistent_product` | Validates 404 response for invalid product IDs                |
+| `test_create_product_invalid`   | Tests validation errors (422) for invalid data                |
+
+**Coverage:**
+- Health check endpoint
+- Database connectivity
+- CRUD operations
+- Error handling (404, 422)
+- Data validation
 
 ---
 
@@ -246,6 +311,12 @@ DATABASE_URL=postgresql://user:password@host:port/database_name
 
 ```env
 DATABASE_URL=postgresql://postgres:password@localhost:5432/retail_inventory_db
+```
+
+**Example for Supabase (production):**
+
+```env
+DATABASE_URL=postgresql://user:password@db.supabase.co:5432/postgres
 ```
 
 **Example for Render deployment:**
@@ -286,35 +357,40 @@ retail-inventory-api/
 ├── LICENSE                   # MIT License
 ├── README.md                 # This file
 ├── DESIGN.md                 # Architecture and migration notes
+├── tests/
+│   ├── __init__.py          # Test package initialization
+│   └── test_api.py          # API endpoint test suite
 └── logs/
     └── app.log               # Application logs
 ```
 
 ### Architecture Overview
 
-**Presentation Layer (`main.py`):**  
+**Presentation Layer (`main.py`):**
 FastAPI routes, HTTP request/response handling, dependency injection
 
-**Data Layer (`database.py`):**  
+**Data Layer (`database.py`):**
 PostgreSQL connection, session management, SQLModel engine
 
-**Schema Layer (`models.py`):**  
+**Schema Layer (`models.py`):**
 SQLModel classes serving dual purpose - Pydantic validation AND SQLAlchemy ORM
 
 ---
 
 ## Tech Stack Details
 
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| Language | Python 3.11+ | Primary development language |
-| Framework | FastAPI | High-performance async REST API |
-| ORM | SQLModel | Combines Pydantic validation + SQLAlchemy ORM |
-| Database | PostgreSQL 15 | Production-grade relational database |
-| Server | Uvicorn | ASGI server for FastAPI |
-| Containerization | Docker + Docker Compose | Consistent deployment environments |
-| Deployment | Render | Cloud hosting platform |
-| Logging | Python logging | Structured logging to console and file |
+| Component        | Technology               | Purpose                                       |
+| ---------------- | ------------------------ | --------------------------------------------- |
+| Language         | Python 3.11+             | Primary development language                  |
+| Framework        | FastAPI                  | High-performance async REST API               |
+| ORM              | SQLModel                 | Combines Pydantic validation + SQLAlchemy ORM |
+| Database         | PostgreSQL 15 (Supabase) | Production-grade relational database          |
+| Server           | Uvicorn                  | ASGI server for FastAPI                       |
+| Containerization | Docker + Docker Compose  | Consistent deployment environments            |
+| Deployment       | Render                   | Cloud hosting platform                        |
+| Database Hosting | Supabase                 | Managed PostgreSQL database                   |
+| Testing          | pytest + TestClient      | Automated API testing                         |
+| Logging          | Python logging           | Structured logging to console and file        |
 
 **Why These Choices:**
 
@@ -333,22 +409,22 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgements
 
-**Mentorship:**  
+**Mentorship:**
 Special thanks to [qqaorum](https://github.com/qqaorum), Senior Software Developer for:
 - Code review and Docker improvements
 - Direct contributions to project architecture
 
-**Project Context:**  
+**Project Context:**
 Built during Phase 0 (Nov-Dec 2025) of my AI Engineering career transition roadmap. This project demonstrates backend development fundamentals before advancing to LLM engineering, RAG systems, and AI agent development in Phase 1 (Jan-Mar 2026).
 
-**Career Background:**  
+**Career Background:**
 Transitioning from 15 years of retail operations management (H&M, Adidas, Luigi Footwear) to AI Engineering, building on B.Eng. in Automation & Control Engineering (2010) and neural network computer vision thesis background.
 
 ---
 
 ## Author
 
-**Chris Kechagias**  
+**Chris Kechagias**
 Learning AI Engineering | Thessaloniki, Greece
 
 🔗 [GitHub](https://github.com/chris-kechagias) | [LinkedIn](https://www.linkedin.com/in/chris-kechagias)
