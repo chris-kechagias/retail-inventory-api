@@ -7,6 +7,7 @@ orchestrating data persistence through SQLModel and PostgreSQL.
 """
 
 # Standard Library Imports
+import time
 import logging
 from typing import Annotated, List, Dict, Any
 from contextlib import asynccontextmanager
@@ -16,12 +17,13 @@ from fastapi import FastAPI, HTTPException, status, Query
 from sqlmodel import select, func
 
 # Local/First-Party Imports
-from models import Product, ProductCreate, ProductUpdate
+from models import HealthResponse, Product, ProductCreate, ProductUpdate
 from database import create_db_and_tables, SessionDep
 
 # ----------------------------------------------------
 # LOGGING & INITIALIZATION
 # ----------------------------------------------------
+START_TIME = time.time()
 
 import logger_config
 
@@ -52,6 +54,14 @@ app = FastAPI(
     version="2.0.0",  # Updated to reflect database-backed milestone
     lifespan=lifespan,
 )
+
+@app.get("/health", response_model=HealthResponse, tags=["System"])
+def health_check():
+    return HealthResponse(
+        status="healthy",
+        version="2.1.0",
+        uptime=time.time() - START_TIME
+    )
 
 @app.get("/")
 def read_root():

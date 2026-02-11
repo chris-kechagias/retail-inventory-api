@@ -1,8 +1,18 @@
-from urllib import response
 from fastapi.testclient import TestClient
 from main import app
 
 client = TestClient(app)
+
+def test_health():
+    """Test health check endpoint for status, version, and uptime."""
+    response = client.get("/health")
+    assert response.status_code == 200
+    
+    data = response.json()
+    assert data["status"] == "healthy"  # Make sure this matches your main.py!
+    assert "version" in data
+    assert "uptime" in data
+    assert isinstance(data["uptime"], float)
 
 def test_cloud_connection():
     """Test that GET /products endpoint works on Cloud DB and returns  a 200 status."""
