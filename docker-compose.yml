@@ -6,7 +6,7 @@ services:
     ports:
       - '5555:5555'
     environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/retail_inventory_db
+      - DATABASE_URL=postgresql+psycopg2://postgres.eqalmqkyguuclatfoctz:g.MRS%2Bwj4Kr%2F9%2AU@aws-1-eu-west-1.pooler.supabase.com:5432/postgres
     depends_on:
       - db
     volumes:
