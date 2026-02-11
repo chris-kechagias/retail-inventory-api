@@ -61,10 +61,11 @@ Three-tier architecture separates concerns into distinct layers, making the code
 
 | Endpoint                | Method | Purpose                   | Status Code            | Rationale                                                         |
 | ----------------------- | ------ | ------------------------- | ---------------------- | ----------------------------------------------------------------- |
+| `/health`               | GET    | Health check endpoint     | 200 OK                 | Monitoring & diagnostics (status, version, uptime)                |
 | `/products`             | GET    | List all products         | 200 OK                 | Standard collection retrieval                                     |
 | `/products/{id}`        | GET    | Get single product        | 200 OK / 404 Not Found | Resource retrieval with error case                                |
 | `/products`             | POST   | Create new product        | **201 Created**        | Semantically correct for resource creation                        |
-| `/products/{id}`        | PUT    | Update product            | 200 OK / 404 Not Found | Resource modification                                             |
+| `/products/{id}`        | PATCH  | Partial update product    | 200 OK / 404 Not Found | Partial resource modification (changed from PUT to PATCH)         |
 | `/products/{id}`        | DELETE | Delete product            | **204 No Content**     | Successful deletion returns no body                               |
 | `/products/total_value` | GET    | Calculate inventory value | 200 OK                 | Analytics endpoint (placed before `{id}` to avoid route conflict) |
 
@@ -354,34 +355,151 @@ FastAPI Exception Handler ──→ JSON Error Response
 
 ## 🏗️ New Data Contract (SQLModel)
 
-| Feature | JSON Version (v1.0) | Postgres Version (v2.0) |
-| :--- | :--- | :--- |
-| **Storage** | `products.json` | **PostgreSQL 18** |
-| **ID Gen** | Manual `max()` in Python | **Database Serial / Autoincrement** |
-| **Concurrency** | One user at a time | **Multiprocessing Ready** |
-| **Deployment** | Local Disk | **Cloud-Ready (Render + Neon/RDS)** |
+| Feature         | JSON Version (v0.x)      | Postgres Version (v1.0)             |
+| :-------------- | :----------------------- | :---------------------------------- |
+| **Storage**     | `products.json`          | **PostgreSQL 18**                   |
+| **ID Gen**      | Manual `max()` in Python | **Database Serial / Autoincrement** |
+| **Concurrency** | One user at a time       | **Multiprocessing Ready**           |
+| **Deployment**  | Local Disk               | **Cloud-Ready (Render + Neon/RDS)** |
 
 ---
 
-### **Phase 6: Advanced Features**
+## 🏥 Phase 6: Health Monitoring & Testing Infrastructure ✅
+
+**Decision:** Add production-ready monitoring and comprehensive test coverage.
+
+### **Health Check Endpoint**
+
+**Rationale:**
+- ✅ **Production requirement** - Cloud platforms (Render, AWS, etc.) need health checks to determine if the service is running
+- ✅ **Uptime tracking** - Provides visibility into service availability
+- ✅ **Version reporting** - Allows monitoring systems to detect deployments
+- ✅ **Standardization** - Industry best practice for REST APIs
+
+**Implementation:**
+
+```python
+class HealthResponse(SQLModel):
+    """Structured health check response"""
+    status: str = Field(default="ok", description="Health status indicator")
+    uptime: float = Field(default=0.0, description="Service uptime in seconds")
+    version: str
+
+@app.get("/health", response_model=HealthResponse, tags=["System"])
+def health_check():
+    return HealthResponse(
+        status="healthy",
+        version="1.1.0",
+        uptime=time.time() - START_TIME
+    )
+```
+
+**Benefits:**
+- Load balancers can verify service health before routing traffic
+- Monitoring tools (Datadog, New Relic) can track availability
+- Version tracking helps correlate bugs with deployments
+- Uptime metric useful for SLA reporting
+
+---
+
+### **Testing Strategy**
+
+**Decision:** Implement pytest-based test suite with FastAPI TestClient.
+
+**Test Coverage (6 tests):**
+
+| Test Name                       | Purpose                       | Validates                         |
+| ------------------------------- | ----------------------------- | --------------------------------- |
+| `test_health`                   | Health endpoint functionality | Status, version, uptime fields    |
+| `test_cloud_connection`         | Database connectivity         | Supabase connection works         |
+| `test_create_product`           | Product creation              | POST endpoint, validation         |
+| `test_read_single_product`      | Single product retrieval      | GET by ID works                   |
+| `test_read_nonexistent_product` | Error handling                | 404 response for missing products |
+| `test_create_product_invalid`   | Input validation              | 422 response for invalid data     |
+
+**Why TestClient over manual testing:**
+- ✅ **Automated** - Runs in seconds, no manual clicking
+- ✅ **Repeatable** - Same tests, same results every time
+- ✅ **CI/CD ready** - Can integrate with GitHub Actions
+- ✅ **Regression prevention** - Catches bugs when refactoring
+
+**Key Testing Patterns:**
+
+```python
+from fastapi.testclient import TestClient
+
+# 1. Test endpoint response structure
+def test_health():
+    response = client.get("/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert "version" in data  # Ensure expected fields exist
+
+# 2. Test database integration
+def test_cloud_connection():
+    response = client.get("/products/")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)  # Verify list response
+
+# 3. Test error cases
+def test_read_nonexistent_product():
+    response = client.get("/products/999999")
+    assert response.status_code == 404  # Verify proper error handling
+```
+
+---
+
+## 🗄️ Database Migration: Render → Supabase
+
+**Decision:** Migrate from Render's PostgreSQL to Supabase's managed PostgreSQL.
+
+### **Why the change?**
+
+- ❌ **Render limitation** - Render's free tier PostgreSQL became obsolete/deprecated
+- ✅ **Supabase advantages:**
+  - Modern PostgreSQL management interface
+  - Built-in API generation (REST & GraphQL)
+  - Real-time subscriptions capability
+  - Better free tier for development
+
+### **Migration Impact:**
+
+**Code changes required:** ✅ **ZERO**
+- SQLModel abstracts the database layer
+- Only the `DATABASE_URL` environment variable changed
+- Same PostgreSQL protocol (psycopg2 driver)
+
+**Connection String Format:**
+
+```bash
+# Old (Render)
+DATABASE_URL=postgresql://user:password@hostname.render.com/database
+
+# New (Supabase)
+DATABASE_URL=postgresql://user:password@db.supabase.co:5432/postgres
+```
+
+**Benefits:**
+- Same ACID compliance and relational integrity
+- Better developer experience with Supabase dashboard
+- Free tier more suitable for portfolio projects
+- Potential for future feature expansion (real-time, storage)
+
+---
+
+### **Phase 7: Advanced Features** (Planned)
 
 - Add user authentication (JWT tokens)
-- Implement pagination for large datasets
-- Add search & filtering capabilities
+- Implement search & filtering capabilities
 - Rate limiting for API protection
+- Caching layer (Redis)
 
-### **Phase 7: Containerization**
+### **Phase 8: CI/CD Pipeline** (Planned)
 
-- Dockerize the application
-- Multi-stage builds for optimization
-- Docker Compose for local development
-
-### **Phase 8: Testing & CI/CD**
-
-- Unit tests for service layer
-- Integration tests for API endpoints
-- GitHub Actions for automated testing
+- GitHub Actions workflow for automated testing
 - Automated deployment on merge to main
+- Test coverage reporting
+- Linting and code quality checks (ruff, black)
 
 ---
 
@@ -406,33 +524,39 @@ FastAPI Exception Handler ──→ JSON Error Response
 
 ## 🎓 Skills Demonstrated (The Evolution)
 
-### **v1.0.0 - The Prototype (File-Based)**
-*Focused on API fundamentals and clean architectural separation.*
-
-| Skill Category            | Specific Skills                                           |
-| ------------------------- | --------------------------------------------------------- |
-| **Backend Development** | FastAPI, RESTful API design, HTTP semantics               |
-| **Software Architecture** | Three-tier architecture, separation of concerns           |
-| **Data Validation** | Pydantic models, Field constraints, type safety           |
-| **Error Handling** | Try-except blocks, HTTPException, proper status codes     |
-| **Logging** | Python logging module, structured logs, multiple handlers |
-| **Code Quality** | Type hints, docstrings, meaningful variable names         |
-| **Version Control** | Git, meaningful commits, clean repo structure             |
-| **Documentation** | README, design docs, inline comments                      |
-
-### **v2.0.0 - The Professional Upgrade (Database-Driven)**
+### **v1.0.0 - The Professional Upgrade (Database-Driven)**
 *Focused on scalability, relational data, and modern Python patterns.*
 
-| Skill Category            | Specific Skills                                           |
-| ------------------------- | --------------------------------------------------------- |
-| **Database Engineering** | **PostgreSQL 18**, Relational Schema Design, SQL Aggregations |
-| **ORM & Persistence** | **SQLModel**, SQLAlchemy Engine, Session & Transaction management |
-| **Modern Async Patterns** | **Lifespan Context Managers** (replacing deprecated events) |
-| **Dependency Injection** | FastAPI `Depends` with **Annotated** type hints           |
-| **Security & Config** | Environment Secret Management (**`.env`**, `python-dotenv`) |
-| **Data Integrity** | Database-level Primary Keys, Indexing, and Auto-increment |
-| **Advanced Querying** | Database-side math (`func.sum`), Offset/Limit Pagination   |
-| **Dev Environment** | pgAdmin 4 for Database Administration & Data Visualization |
+| Skill Category            | Specific Skills                                                   |
+| ------------------------- | ----------------------------------------------------------------- |
+| **Backend Development**   | FastAPI, RESTful API design, HTTP semantics                       |
+| **Software Architecture** | Three-tier architecture, separation of concerns                   |
+| **Database Engineering**  | **PostgreSQL 18**, Relational Schema Design, SQL Aggregations     |
+| **ORM & Persistence**     | **SQLModel**, SQLAlchemy Engine, Session & Transaction management |
+| **Modern Async Patterns** | **Lifespan Context Managers** (replacing deprecated events)       |
+| **Dependency Injection**  | FastAPI `Depends` with **Annotated** type hints                   |
+| **Security & Config**     | Environment Secret Management (**`.env`**, `python-dotenv`)       |
+| **Data Integrity**        | Database-level Primary Keys, Indexing, and Auto-increment         |
+| **Advanced Querying**     | Database-side math (`func.sum`), Offset/Limit Pagination          |
+| **Data Validation**       | Pydantic models, Field constraints, type safety                   |
+| **Error Handling**        | Try-except blocks, HTTPException, proper status codes             |
+| **Logging**               | Python logging module, structured logs, multiple handlers         |
+| **Code Quality**          | Type hints, docstrings, meaningful variable names                 |
+| **Version Control**       | Git, meaningful commits, clean repo structure                     |
+| **Documentation**         | README, design docs, inline comments                              |
+| **Dev Environment**       | pgAdmin 4 for Database Administration & Data Visualization        |
+
+### **v1.1.0 - Production Monitoring & Quality Assurance**
+*Focused on testing, health monitoring, and production readiness.*
+
+| Skill Category           | Specific Skills                                                     |
+| ------------------------ | ------------------------------------------------------------------- |
+| **Testing & QA**         | **pytest**, FastAPI TestClient, Integration Testing, Test Coverage  |
+| **Health Monitoring**    | Health Check Endpoints, Uptime Tracking, Version Reporting          |
+| **Cloud Infrastructure** | **Supabase** PostgreSQL, Database Migration, Multi-cloud Deployment |
+| **Error Handling**       | 404 Testing, 422 Validation Testing, Status Code Verification       |
+| **API Design Maturity**  | System Tags, Response Models, Structured Health Responses           |
+| **Development Workflow** | Test-Driven Practices, Automated Testing, Regression Prevention     |
 
 ---
 
@@ -443,13 +567,12 @@ FastAPI Exception Handler ──→ JSON Error Response
 - [PostgreSQL Official Documentation](https://www.postgresql.org/docs/)
 - [Python Logging Cookbook](https://docs.python.org/3/howto/logging.html)
 - [REST API Best Practices](https://restfulapi.net/)
-- [Git Configuration (.gitignore) Guide](https://git-scm.com/docs/gitignore)
+- [Git Configuration (.gitignore) Guide](https://git-sc.com/docs/gitignore)
 - [Dockerizing a FastAPI App](https://fastapi.tiangolo.com/deployment/docker/)
 - [Heroku/Render Procfile Documentation](https://devcenter.heroku.com/articles/procfile)
 
 ---
 
-**Document Version:** 2.0.0
-**Last Updated:** December 23, 2025
-**Status:** Database-driven Architecture (v2.0) - Refactoring Complete
-
+**Document Version:** 1.1.0
+**Last Updated:** February 11, 2026
+**Status:** Production Monitoring & Testing (v1.1.0) - Health Checks & Test Suite Added
