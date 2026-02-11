@@ -51,7 +51,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Retail Inventory API",
     description="A robust FastAPI service for managing warehouse stock using PostgreSQL and SQLModel.",
-    version="2.0.0",  # Updated to reflect database-backed milestone
+    version="2.1.0",  # Updated to reflect database-backed milestone
     lifespan=lifespan,
 )
 
@@ -67,7 +67,7 @@ def health_check():
 def read_root():
     return {
         "message": "Retail Inventory API",
-        "version": "2.0.0",
+        "version": "2.1.0",
         "docs": "/docs",
         "endpoints": "/products"
     }
