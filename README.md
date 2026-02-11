@@ -411,7 +411,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgements
 
 **Mentorship:**
-Special thanks to [qqaorum](https://github.com/qquorum), Senior Software Developer for:
+Special thanks to [qquorum](https://github.com/qquorum), Senior Software Developer for:
 - Code review and Docker improvements
 - Direct contributions to project architecture
 
