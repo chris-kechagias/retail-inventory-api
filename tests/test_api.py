@@ -1,3 +1,4 @@
+from urllib import response
 from fastapi.testclient import TestClient
 from main import app
 
@@ -46,3 +47,20 @@ def test_read_nonexistent_product():
     response = client.get("/products/999999")  
     assert response.status_code == 404
     assert "not found" in response.json()["detail"].lower()
+
+def test_create_product_invalid():
+    """Test that POST /products returns 422 for invalid data types."""
+    payload = {
+        "name": "Invalid Product",
+        "price": "not-a-number",  
+        "quantity": "also not a number",  
+        "in_stock": "not a boolean"  
+    }
+    response = client.post("/products", json=payload)
+
+    assert response.status_code == 422
+
+    errors = response.json()["detail"]
+    assert any("price" in error["loc"] for error in errors)
+    assert any("quantity" in error["loc"] for error in errors)
+    assert any("in_stock" in error["loc"] for error in errors)    
