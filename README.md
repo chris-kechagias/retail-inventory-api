@@ -9,12 +9,17 @@ REST API for retail inventory management built while learning modern Python back
 ![Python](https://img.shields.io/badge/Python-3.11%2B-blue?style=flat-square&logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?style=flat-square&logo=fastapi)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?style=flat-square&logo=postgresql)
+![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E?style=flat-square&logo=supabase)
+![pytest](https://img.shields.io/badge/pytest-Testing-0A9EDC?style=flat-square&logo=pytest)
 ![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?style=flat-square&logo=docker)
 ![SQLModel](https://img.shields.io/badge/SQLModel-ORM-red?style=flat-square)
+![Render](https://img.shields.io/badge/Render-Deployed-46E3B7?style=flat-square&logo=render)
 
 ## Status
 
-![Deployment](https://img.shields.io/website?url=https%3A%2F%2Fretail-inventory-api-chris.onrender.com&label=Live%20API&style=flat-square)
+![API](https://img.shields.io/badge/API-Live-success?style=flat-square)
+![Render](https://img.shields.io/badge/Deployed%20on-Render-46E3B7?style=flat-square&logo=render)
+![Version](https://img.shields.io/badge/version-1.1.0-blue?style=flat-square)
 ![Last Commit](https://img.shields.io/github/last-commit/chris-kechagias/retail-inventory-api?style=flat-square)
 ![Commits](https://img.shields.io/github/commit-activity/m/chris-kechagias/retail-inventory-api?style=flat-square&label=Activity)
 ![License](https://img.shields.io/github/license/chris-kechagias/retail-inventory-api?style=flat-square)
