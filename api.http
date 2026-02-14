@@ -1,3 +1,9 @@
+### GET /health
+GET http://localhost:8000/health
+
+### GET /
+GET http://localhost:8000/
+
 ### GET /products/total_value
 GET http://localhost:8000/products/total_value
 
