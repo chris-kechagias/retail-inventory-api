@@ -62,6 +62,7 @@ Three-tier architecture separates concerns into distinct layers, making the code
 | Endpoint                | Method | Purpose                   | Status Code            | Rationale                                                         |
 | ----------------------- | ------ | ------------------------- | ---------------------- | ----------------------------------------------------------------- |
 | `/health`               | GET    | Health check endpoint     | 200 OK                 | Monitoring & diagnostics (status, version, uptime)                |
+| `/health`               | HEAD   | Health check (headers)    | 200 OK                 | UptimeRobot free-tier monitoring support                          |
 | `/products`             | GET    | List all products         | 200 OK                 | Standard collection retrieval                                     |
 | `/products/{id}`        | GET    | Get single product        | 200 OK / 404 Not Found | Resource retrieval with error case                                |
 | `/products`             | POST   | Create new product        | **201 Created**        | Semantically correct for resource creation                        |
@@ -85,26 +86,35 @@ Three-tier architecture separates concerns into distinct layers, making the code
 
 ## 🗂️ Data Model Design
 
-### **Product Schema (Pydantic):**
+### **Product Schema (SQLModel):**
 
 ```python
-class Product(BaseModel):
-    id: int          # Unique identifier (auto-generated)
-    name: str        # Max 50 chars (prevents abuse)
-    price: float     # Must be > 0 (business constraint)
-    quantity: int    # Must be >= 0 (can be out of stock)
-    in_stock: bool   # Calculated based on quantity
+class ProductBase(SQLModel):
+    name: str       # Min 1 char, max 50 chars, whitespace stripped & validated
+    price: float    # Must be > 0 (business constraint)
+    quantity: int   # Must be >= 0 (can be out of stock)
+    in_stock: bool  # Flag for product availability
 ```
 
 ### **Validation Rules:**
 
-| Field      | Constraint      | Rationale                                      |
-| ---------- | --------------- | ---------------------------------------------- |
-| `id`       | `> 0`           | IDs start at 1 (0 is invalid)                  |
-| `name`     | `max_length=50` | Prevents excessively long names                |
-| `price`    | `> 0`           | Products can't be free or negative price       |
-| `quantity` | `>= 0`          | Zero is valid (out of stock)                   |
-| `in_stock` | Auto-calculated | Updated in service layer when quantity changes |
+| Field      | Constraint                        | Rationale                                           |
+| ---------- | --------------------------------- | --------------------------------------------------- |
+| `id`       | Auto-generated (primary key)      | Database handles ID generation via autoincrement     |
+| `name`     | `min_length=1`, `max_length=50`   | Prevents empty and excessively long names            |
+| `name`     | `@field_validator` (strip + check)| Rejects whitespace-only names like `"   "`           |
+| `price`    | `gt=0`                            | Products can't be free or negative price             |
+| `quantity` | `ge=0`                            | Zero is valid (out of stock)                         |
+| `in_stock` | Optional on create                | Can be auto-determined or explicitly set             |
+
+### **Schema Inheritance Pattern:**
+
+```python
+ProductBase    → Shared fields + validation (name, price, quantity, in_stock)
+  ├── Product       → Database table model (adds id, table=True)
+  ├── ProductCreate → POST schema (inherits base, excludes id)
+  └── ProductUpdate → PATCH schema (all fields Optional for partial updates)
+```
 
 ---
 
@@ -157,46 +167,39 @@ class Product(BaseModel):
 
 ### **2. Why Separate `ProductUpdate` Model?**
 
-**Decision:** Create separate Pydantic model for PUT requests.
+**Decision:** Create separate Pydantic model for PATCH requests.
 
 ```python
-class Product(BaseModel):        # Full model (all fields)
-    id: int
+class ProductBase(SQLModel):     # Full model (shared fields)
     name: str
     price: float
     quantity: int
     in_stock: bool
 
-class ProductUpdate(BaseModel):  # Partial model (only updatable fields)
-    quantity: int
+class ProductUpdate(SQLModel):   # Partial model (all Optional)
+    name: Optional[str]
+    price: Optional[float]
+    quantity: Optional[int]
+    in_stock: Optional[bool]
 ```
 
 **Rationale:**
 
-- ✅ **API clarity** - PUT only updates quantity (clear contract)
-- ✅ **Prevents accidental changes** - Can't modify ID, name, or price via PUT
+- ✅ **API clarity** - PATCH only updates provided fields (clear contract)
+- ✅ **Prevents accidental changes** - `exclude_unset=True` ensures only sent fields are modified
 - ✅ **Future extensibility** - Easy to add more updatable fields later
 
 ---
 
-### **3. Why Auto-Generate IDs in Service Layer?**
+### **3. Why Auto-Generate IDs in Database Layer?**
 
-**Decision:** Server assigns IDs, not client.
+**Decision:** Server assigns IDs via PostgreSQL autoincrement, not client.
 
 **Rationale:**
 
 - ✅ **Data integrity** - Prevents ID collisions
 - ✅ **Security** - Client can't forge IDs
-- ✅ **Simplicity** - Client doesn't need to track last ID
-
-**Implementation:**
-
-```python
-def get_next_id(products: list) -> int:
-    if not products:
-        return 1
-    return max(product.get("id", 0) for product in products) + 1
-```
+- ✅ **Simplicity** - Database handles sequencing automatically
 
 ---
 
@@ -210,27 +213,28 @@ def get_next_id(products: list) -> int:
 - ✅ **Three-tier compliance** - Data models should be "dumb" (no logic)
 - ✅ **Explicit updates** - Clear when/where stock status changes
 
-**Implementation:**
-
-```python
-def update_product_quantity(...):
-    product["quantity"] = new_quantity
-    product["in_stock"] = new_quantity > 0  # ← Calculated here
-    save_products(inventory_data)
-```
-
 ---
 
-### **5. Why Logging at Multiple Layers?**
+### **5. Why Structured JSON Logging?**
 
-**Decision:** Add logging in service layer AND presentation layer.
+**Decision:** Use `python-json-logger` with `extra={}` fields instead of plain text f-strings.
+
+**Before (v1.0.0):**
+```
+INFO: 2026-02-15 21:30:00 - __main__ - Product created successfully with ID: 5
+```
+
+**After (v1.2.0):**
+```json
+{"timestamp": "2026-02-15T21:30:00", "level": "INFO", "name": "__main__", "message": "Product created successfully", "product_id": 5}
+```
 
 **Rationale:**
 
-- ✅ **Service layer logs business events** (product created, deleted)
-- ✅ **Presentation layer logs HTTP events** (API calls, 404s)
-- ✅ **Debugging** - Trace requests through all layers
-- ✅ **Production monitoring** - Track API usage patterns
+- ✅ **Machine-parseable** - Log aggregators (Datadog, ELK) can index and search fields
+- ✅ **Searchable** - `product_id`, `count`, `total_value` are discrete keys, not buried in strings
+- ✅ **Consistent format** - Every log line follows the same JSON structure
+- ✅ **Dual output** - Console (Render/Docker) + file (`logs/app.log`) for local debugging
 
 ---
 
@@ -240,23 +244,23 @@ def update_product_quantity(...):
 
 | Error Type               | HTTP Status               | Handling Location    | Example                          |
 | ------------------------ | ------------------------- | -------------------- | -------------------------------- |
-| **Validation Error**     | 422 Unprocessable Entity  | Pydantic (automatic) | Invalid price (<= 0)             |
+| **Validation Error**     | 422 Unprocessable Entity  | Pydantic (automatic) | Invalid price (<= 0), empty name |
 | **Not Found**            | 404 Not Found             | Presentation Layer   | Product ID doesn't exist         |
 | **File I/O Error**       | 500 Internal Server Error | Data Access Layer    | Can't read/write JSON            |
 | **Business Logic Error** | 400 Bad Request           | Business Logic Layer | (Future: duplicate product name) |
 
-### **Error Handling Flow:**
+### **Input Validation Defense:**
 
 ```
 Client Request
      ↓
-Pydantic Validation ──→ 422 (Invalid Data)
+Pydantic Field Constraints ──→ 422 (empty name, negative price, wrong type)
      ↓
-Service Layer Logic ──→ Returns None (Not Found)
+Custom @field_validator ──→ 422 (whitespace-only name like "   ")
      ↓
-Presentation Layer ──→ Raises HTTPException 404
+Endpoint Logic ──→ 404 (product not found)
      ↓
-FastAPI Exception Handler ──→ JSON Error Response
+Success Response ──→ 200/201/204
 ```
 
 ---
@@ -267,33 +271,32 @@ FastAPI Exception Handler ──→ JSON Error Response
 1. CLIENT SENDS:
    POST /products
    {
-     "id": 999,            ← Ignored (server generates ID)
-     "name": "Laptop",
+     "name": "  Laptop  ",
      "price": 999.99,
-     "quantity": 10,
-     "in_stock": true
+     "quantity": 10
    }
 
-2. PRESENTATION LAYER (main.py):
-   - FastAPI receives request
-   - Pydantic validates data (price > 0, quantity >= 0)
-   - Converts to Product model
-   - Calls service layer
+2. VALIDATION LAYER (models.py):
+   - Pydantic checks: min_length=1 ✅, max_length=50 ✅, price gt=0 ✅
+   - @field_validator strips whitespace: "  Laptop  " → "Laptop"
+   - ProductCreate schema passes validation
 
-3. BUSINESS LOGIC LAYER (inventory_service.py):
-   - Generates next available ID (e.g., 5)
-   - Creates product dict with new ID
-   - Appends to in-memory inventory
-   - Calls data access layer
+3. PRESENTATION LAYER (main.py):
+   - FastAPI receives validated data
+   - Injects database session via SessionDep (Depends)
+   - Calls Product.model_validate() to create table instance
+   - Logs: {"message": "Creating new product", "name": "Laptop", "price": 999.99}
 
-4. DATA ACCESS LAYER (inventory_io.py):
-   - Writes entire inventory to products.json
-   - Logs success/failure
+4. DATA LAYER (database.py → PostgreSQL):
+   - session.add(db_product)
+   - session.commit()
+   - session.refresh(db_product) → gets DB-generated ID
+   - Logs: {"message": "Product created successfully", "product_id": 5}
 
 5. RESPONSE TO CLIENT:
    HTTP 201 Created
    {
-     "id": 5,              ← Server-generated ID
+     "id": 5,
      "name": "Laptop",
      "price": 999.99,
      "quantity": 10,
@@ -375,6 +378,7 @@ FastAPI Exception Handler ──→ JSON Error Response
 - ✅ **Uptime tracking** - Provides visibility into service availability
 - ✅ **Version reporting** - Allows monitoring systems to detect deployments
 - ✅ **Standardization** - Industry best practice for REST APIs
+- ✅ **HEAD method support** - Compatible with UptimeRobot free-tier monitoring
 
 **Implementation:**
 
@@ -385,28 +389,23 @@ class HealthResponse(SQLModel):
     uptime: float = Field(default=0.0, description="Service uptime in seconds")
     version: str
 
+@app.head("/health")  # UptimeRobot compatibility
 @app.get("/health", response_model=HealthResponse, tags=["System"])
 def health_check():
     return HealthResponse(
         status="healthy",
-        version="1.1.0",
+        version="1.2.0",
         uptime=time.time() - START_TIME
     )
 ```
-
-**Benefits:**
-- Load balancers can verify service health before routing traffic
-- Monitoring tools (Datadog, New Relic) can track availability
-- Version tracking helps correlate bugs with deployments
-- Uptime metric useful for SLA reporting
 
 ---
 
 ### **Testing Strategy**
 
-**Decision:** Implement pytest-based test suite with FastAPI TestClient.
+**Decision:** Implement two-tier testing: integration tests (real DB) + isolated mock tests (SQLite override).
 
-**Test Coverage (6 tests):**
+**Integration Test Coverage (6 tests — `test_api.py`):**
 
 | Test Name                       | Purpose                       | Validates                         |
 | ------------------------------- | ----------------------------- | --------------------------------- |
@@ -417,34 +416,33 @@ def health_check():
 | `test_read_nonexistent_product` | Error handling                | 404 response for missing products |
 | `test_create_product_invalid`   | Input validation              | 422 response for invalid data     |
 
-**Why TestClient over manual testing:**
-- ✅ **Automated** - Runs in seconds, no manual clicking
-- ✅ **Repeatable** - Same tests, same results every time
-- ✅ **CI/CD ready** - Can integrate with GitHub Actions
-- ✅ **Regression prevention** - Catches bugs when refactoring
+**Isolated Mock Test Coverage (9 tests — `test_mock_api.py`):**
 
-**Key Testing Patterns:**
+| Test Name                          | Purpose                              | Validates                               |
+| ---------------------------------- | ------------------------------------ | --------------------------------------- |
+| `test_create_product_isolated`     | Product creation without real DB     | Dependency override works               |
+| `test_read_products_isolated`      | Product listing in isolation         | SQLite override returns correct data    |
+| `test_product_not_found_isolated`  | 404 in isolated environment          | Error handling works without Supabase   |
+| `test_create_product_empty_name`   | Empty name rejection                 | `min_length=1` catches `""`             |
+| `test_create_product_negative_price`| Negative price rejection            | `gt=0` catches negative values          |
+| `test_create_product_whitespace_name`| Whitespace-only name rejection     | `@field_validator` catches `"   "`      |
+
+**Why two test tiers:**
+- ✅ **Integration tests** prove the full stack works end-to-end with real Supabase
+- ✅ **Mock tests** prove endpoint logic works in isolation, fast, offline, with zero data pollution
+- ✅ **Together** they catch both connectivity issues AND logic bugs
+
+**Key Testing Pattern — Dependency Override:**
 
 ```python
-from fastapi.testclient import TestClient
+# Swap real Supabase for in-memory SQLite
+test_engine = create_engine("sqlite://", poolclass=StaticPool)
 
-# 1. Test endpoint response structure
-def test_health():
-    response = client.get("/health")
-    assert response.status_code == 200
-    data = response.json()
-    assert "version" in data  # Ensure expected fields exist
+def get_test_session():
+    with Session(test_engine) as session:
+        yield session
 
-# 2. Test database integration
-def test_cloud_connection():
-    response = client.get("/products/")
-    assert response.status_code == 200
-    assert isinstance(response.json(), list)  # Verify list response
-
-# 3. Test error cases
-def test_read_nonexistent_product():
-    response = client.get("/products/999999")
-    assert response.status_code == 404  # Verify proper error handling
+app.dependency_overrides[get_session] = get_test_session
 ```
 
 ---
@@ -487,14 +485,71 @@ DATABASE_URL=postgresql://user:password@db.supabase.co:5432/postgres
 
 ---
 
-### **Phase 7: Advanced Features** (Planned)
+## 🔒 Phase 7: Isolated Testing, Validation & Structured Logging ✅
+
+**Decision:** Add dependency override testing, input validation hardening, and structured JSON logging.
+
+### **Input Validation Hardening**
+
+**Problem discovered by tests:** Empty and whitespace-only product names were accepted (returned 201 instead of 422).
+
+**Solution — layered defense:**
+
+```python
+name: str = Field(max_length=50, min_length=1, index=True)
+
+@field_validator("name")
+@classmethod
+def name_must_not_be_empty(cls, value):
+    if not value.strip():
+        raise ValueError("Product name must not be empty.")
+    return value.strip()
+```
+
+- `min_length=1` catches empty strings `""`
+- `@field_validator` strips whitespace and rejects blank names like `"   "`
+- `.strip()` also cleans valid names: `"  Laptop  "` → `"Laptop"`
+
+**Key insight:** Tests caught a real bug that manual testing missed. This is exactly what automated testing is for.
+
+### **Structured JSON Logging**
+
+**Decision:** Replace `logging.Formatter` with `jsonlogger.JsonFormatter` and convert all f-string log calls to use `extra={}`.
+
+**Why:**
+- Log aggregators can index and search discrete fields
+- `product_id`, `count`, `total_value` become queryable keys
+- Consistent JSON structure across all log lines
+- Compatible with Datadog, ELK stack, Render logs
+
+### **Dependency Override Testing**
+
+**Decision:** Use FastAPI's `app.dependency_overrides` with in-memory SQLite for isolated testing.
+
+**Why:**
+- Tests run offline (no Supabase dependency)
+- No test data pollution in production database
+- No phantom auto-increment IDs
+- Fast execution (no network calls)
+- Deterministic results
+
+---
+
+### **Phase 8: Router Refactor** (Planned)
+
+- Refactor `main.py` into proper `app/` package structure
+- Move product endpoints to `app/routers/products.py`
+- Slim down `main.py` to app instance + lifespan + health only
+- Update imports across test files
+
+### **Phase 9: Advanced Features** (Planned)
 
 - Add user authentication (JWT tokens)
 - Implement search & filtering capabilities
 - Rate limiting for API protection
 - Caching layer (Redis)
 
-### **Phase 8: CI/CD Pipeline** (Planned)
+### **Phase 10: CI/CD Pipeline** (Planned)
 
 - GitHub Actions workflow for automated testing
 - Automated deployment on merge to main
@@ -512,6 +567,7 @@ DATABASE_URL=postgresql://user:password@db.supabase.co:5432/postgres
 3. ✅ **Using AI assistants** - Gemini/ChatGPT/Claude for architecture validation
 4. ✅ **Type hints everywhere** - Caught bugs early, improved IDE autocomplete
 5. ✅ **Comprehensive logging** - Made debugging significantly easier
+6. ✅ **Tests catching real bugs** - Empty name validation gap found by automated tests
 
 ### **Challenges Overcome:**
 
@@ -519,6 +575,8 @@ DATABASE_URL=postgresql://user:password@db.supabase.co:5432/postgres
 2. 🔧 **Status code selection** - 201 vs 200, 204 vs 200 (semantic correctness matters)
 3. 🔧 **Layer separation** - Resisted putting business logic in routes (kept it in service layer)
 4. 🔧 **Error handling** - Learned when to return `None` vs raise exceptions
+5. 🔧 **Pydantic v1 vs v2** - Error types changed (`"value_error.any_str.min_length"` → `"string_too_short"`)
+6. 🔧 **UptimeRobot HEAD requests** - Free tier only sends HEAD, requiring `@app.head()` decorator
 
 ---
 
@@ -558,6 +616,18 @@ DATABASE_URL=postgresql://user:password@db.supabase.co:5432/postgres
 | **API Design Maturity**  | System Tags, Response Models, Structured Health Responses           |
 | **Development Workflow** | Test-Driven Practices, Automated Testing, Regression Prevention     |
 
+### **v1.2.0 - Isolated Testing, Validation & Structured Logging**
+*Focused on test isolation, input hardening, and production observability.*
+
+| Skill Category              | Specific Skills                                                              |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| **Advanced Testing**        | Dependency Override Pattern, SQLite In-Memory Testing, StaticPool            |
+| **Input Validation**        | `@field_validator`, Whitespace Stripping, Layered Validation Defense         |
+| **Structured Logging**      | `python-json-logger`, `extra={}` Pattern, Machine-Parseable Log Output      |
+| **Pydantic v2 Proficiency** | `field_validator` Decorator, `"string_too_short"` Error Types               |
+| **Monitoring Integration**  | UptimeRobot HEAD Support, External Health Check Configuration               |
+| **Test Architecture**       | Two-Tier Testing Strategy (Integration + Isolated), Zero Data Pollution     |
+
 ---
 
 ## 📖 References & Resources
@@ -565,7 +635,9 @@ DATABASE_URL=postgresql://user:password@db.supabase.co:5432/postgres
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
 - [SQLModel Documentation](https://sqlmodel.tiangolo.com/)
 - [PostgreSQL Official Documentation](https://www.postgresql.org/docs/)
+- [Python JSON Logger](https://github.com/madzak/python-json-logger)
 - [Python Logging Cookbook](https://docs.python.org/3/howto/logging.html)
+- [Pydantic v2 Validators](https://docs.pydantic.dev/latest/concepts/validators/)
 - [REST API Best Practices](https://restfulapi.net/)
 - [Git Configuration (.gitignore) Guide](https://git-sc.com/docs/gitignore)
 - [Dockerizing a FastAPI App](https://fastapi.tiangolo.com/deployment/docker/)
@@ -573,6 +645,6 @@ DATABASE_URL=postgresql://user:password@db.supabase.co:5432/postgres
 
 ---
 
-**Document Version:** 1.1.0
-**Last Updated:** February 11, 2026
-**Status:** Production Monitoring & Testing (v1.1.0) - Health Checks & Test Suite Added
+**Document Version:** 1.2.0
+**Last Updated:** February 15, 2026
+**Status:** Isolated Testing, Validation & Structured Logging (v1.2.0) - Mock Tests, Input Hardening & JSON Logging Added
