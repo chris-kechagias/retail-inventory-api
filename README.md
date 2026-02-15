@@ -19,7 +19,7 @@ REST API for retail inventory management built while learning modern Python back
 
 ![API](https://img.shields.io/badge/API-Live-success?style=flat-square)
 ![Render](https://img.shields.io/badge/Deployed%20on-Render-46E3B7?style=flat-square&logo=render)
-![Version](https://img.shields.io/badge/version-1.1.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-1.2.0-blue?style=flat-square)
 ![Last Commit](https://img.shields.io/github/last-commit/chris-kechagias/retail-inventory-api?style=flat-square)
 ![Commits](https://img.shields.io/github/commit-activity/m/chris-kechagias/retail-inventory-api?style=flat-square&label=Activity)
 ![License](https://img.shields.io/github/license/chris-kechagias/retail-inventory-api?style=flat-square)
@@ -45,7 +45,9 @@ REST API for retail inventory management built while learning modern Python back
   - [API Endpoints](#api-endpoints)
   - [Testing](#testing)
     - [Running Tests](#running-tests)
-    - [Test Suite](#test-suite)
+    - [Integration Tests](#integration-tests)
+    - [Isolated Mock Tests](#isolated-mock-tests)
+  - [Logging](#logging)
   - [Configuration](#configuration)
     - [Environment Variables](#environment-variables)
     - [Docker Compose Configuration](#docker-compose-configuration)
@@ -82,13 +84,14 @@ This project represents Phase 0 completion (Nov-Dec 2025) in a structured 10-mon
 -  Complete CRUD operations for product inventory
 -  PostgreSQL database with SQLModel ORM (Supabase)
 -  Docker containerization with Docker Compose
--  Comprehensive logging infrastructure
--  Pydantic validation on all endpoints
+-  Structured JSON logging (python-json-logger) with searchable fields
+-  Pydantic validation on all endpoints with whitespace-aware name validation
 -  Deployed on Render with live documentation
 -  SQL-based total inventory value calculation
 -  Pagination support for product listings
--  Health check endpoint with uptime tracking
--  Comprehensive test suite with pytest
+-  Health check endpoint with uptime tracking and HEAD method support
+-  15 automated tests: 6 integration + 9 isolated mock tests
+-  Dependency override pattern for isolated testing (SQLite in-memory)
 
 ---
 
@@ -238,6 +241,12 @@ curl "http://127.0.0.1:8000/products/total_value"
 curl -X DELETE "http://127.0.0.1:8000/products/1"
 ```
 
+**7. Health check:**
+
+```bash
+curl "http://127.0.0.1:8000/health"
+```
+
 ---
 
 ## API Endpoints
@@ -246,6 +255,7 @@ curl -X DELETE "http://127.0.0.1:8000/products/1"
 | ------ | ----------------------- | --------------------------------------------- | ------------ |
 | GET    | `/`                     | API info and documentation links              | 200          |
 | GET    | `/health`               | Health check with status, version, and uptime | 200          |
+| HEAD   | `/health`               | Health check (headers only, for monitoring)   | 200          |
 | GET    | `/products`             | List all products with pagination             | 200          |
 | GET    | `/products/{id}`        | Get single product by ID                      | 200, 404     |
 | GET    | `/products/total_value` | Calculate total inventory value (SQL)         | 200          |
@@ -259,31 +269,37 @@ curl -X DELETE "http://127.0.0.1:8000/products/1"
 
 ## Testing
 
-The project includes a comprehensive test suite using **pytest** and FastAPI's **TestClient**.
+The project includes two test suites: integration tests (hitting real Supabase) and isolated mock tests (using in-memory SQLite via dependency overrides).
 
 ### Running Tests
 
 **1. Install test dependencies:**
 
 ```bash
-pip install pytest pytest-cov
+pip install pytest httpx
 ```
 
 **2. Run all tests:**
 
 ```bash
-pytest tests/
+pytest tests/ -v
 ```
 
-**3. Run tests with coverage:**
+**3. Run only integration tests:**
 
 ```bash
-pytest tests/ --cov=. --cov-report=term-missing
+pytest tests/test_api.py -v
 ```
 
-### Test Suite
+**4. Run only isolated mock tests:**
 
-The test suite (`tests/test_api.py`) includes:
+```bash
+pytest tests/test_mock_api.py -v
+```
+
+### Integration Tests
+
+The integration test suite (`tests/test_api.py`) validates real database connectivity and endpoint behavior against Supabase:
 
 | Test                            | Purpose                                                       |
 | ------------------------------- | ------------------------------------------------------------- |
@@ -294,12 +310,51 @@ The test suite (`tests/test_api.py`) includes:
 | `test_read_nonexistent_product` | Validates 404 response for invalid product IDs                |
 | `test_create_product_invalid`   | Tests validation errors (422) for invalid data                |
 
-**Coverage:**
-- Health check endpoint
-- Database connectivity
-- CRUD operations
-- Error handling (404, 422)
-- Data validation
+### Isolated Mock Tests
+
+The mock test suite (`tests/test_mock_api.py`) uses FastAPI's dependency override pattern to swap Supabase for an in-memory SQLite database, ensuring zero production impact:
+
+| Test                                | Purpose                                                   |
+| ----------------------------------- | --------------------------------------------------------- |
+| `test_create_product_isolated`      | Tests product creation without touching real database     |
+| `test_read_products_isolated`       | Tests product listing in isolated environment             |
+| `test_product_not_found_isolated`   | Tests 404 response in isolated environment                |
+| `test_create_product_empty_name`    | Validates rejection of empty product names                |
+| `test_create_product_negative_price`| Validates rejection of negative prices (gt=0)             |
+| `test_create_product_whitespace_name`| Validates rejection of whitespace-only names             |
+
+**Key pattern — dependency override:**
+
+```python
+from database import get_session
+
+def get_test_session():
+    with Session(test_engine) as session:
+        yield session
+
+app.dependency_overrides[get_session] = get_test_session
+```
+
+This swaps the real Supabase session for a disposable SQLite session. No network calls, no test data pollution, no phantom IDs.
+
+---
+
+## Logging
+
+The API uses **structured JSON logging** via `python-json-logger` for machine-parseable, searchable log output.
+
+**Example log output:**
+
+```json
+{"timestamp": "2026-02-15T23:33:49", "level": "INFO", "name": "main", "message": "Product created successfully", "product_id": 2}
+{"timestamp": "2026-02-15T23:35:22", "level": "WARNING", "name": "main", "message": "Product not found", "product_id": 999}
+```
+
+**Key features:**
+- All data fields logged as discrete JSON keys (not buried in f-strings)
+- Dual output: console (for Render/Docker) + file (`logs/app.log`) for local debugging
+- Searchable by `product_id`, `count`, `total_value`, and other business fields
+- Compatible with log aggregators (Datadog, ELK stack, Render logs)
 
 ---
 
@@ -353,8 +408,9 @@ retail-inventory-api/
 ├── main.py                   # FastAPI routes and application entry
 ├── models.py                 # SQLModel schemas and database tables
 ├── database.py               # PostgreSQL engine and session management
-├── logger_config.py          # Logging configuration
+├── logger_config.py          # Structured JSON logging configuration
 ├── requirements.txt          # Python dependencies
+├── api.http                  # HTTP test file for VS Code REST Client
 ├── .env                      # Environment variables (not in repo)
 ├── .env.example              # Template for environment setup
 ├── docker-compose.yml        # Container orchestration
@@ -365,9 +421,10 @@ retail-inventory-api/
 ├── DESIGN.md                 # Architecture and migration notes
 ├── tests/
 │   ├── __init__.py          # Test package initialization
-│   └── test_api.py          # API endpoint test suite
+│   ├── test_api.py          # Integration tests (real Supabase)
+│   └── test_mock_api.py     # Isolated mock tests (SQLite override)
 └── logs/
-    └── app.log               # Application logs
+    └── app.log               # Structured JSON application logs
 ```
 
 ### Architecture Overview
@@ -379,24 +436,25 @@ FastAPI routes, HTTP request/response handling, dependency injection
 PostgreSQL connection, session management, SQLModel engine
 
 **Schema Layer (`models.py`):**
-SQLModel classes serving dual purpose - Pydantic validation AND SQLAlchemy ORM
+SQLModel classes serving dual purpose - Pydantic validation AND SQLAlchemy ORM, with custom field validators for input sanitization
 
 ---
 
 ## Tech Stack Details
 
-| Component        | Technology               | Purpose                                       |
-| ---------------- | ------------------------ | --------------------------------------------- |
-| Language         | Python 3.11+             | Primary development language                  |
-| Framework        | FastAPI                  | High-performance async REST API               |
-| ORM              | SQLModel                 | Combines Pydantic validation + SQLAlchemy ORM |
-| Database         | PostgreSQL 15 (Supabase) | Production-grade relational database          |
-| Server           | Uvicorn                  | ASGI server for FastAPI                       |
-| Containerization | Docker + Docker Compose  | Consistent deployment environments            |
-| Deployment       | Render                   | Cloud hosting platform                        |
-| Database Hosting | Supabase                 | Managed PostgreSQL database                   |
-| Testing          | pytest + TestClient      | Automated API testing                         |
-| Logging          | Python logging           | Structured logging to console and file        |
+| Component        | Technology               | Purpose                                         |
+| ---------------- | ------------------------ | ----------------------------------------------- |
+| Language         | Python 3.11+             | Primary development language                    |
+| Framework        | FastAPI                  | High-performance async REST API                 |
+| ORM              | SQLModel                 | Combines Pydantic validation + SQLAlchemy ORM   |
+| Database         | PostgreSQL 15 (Supabase) | Production-grade relational database            |
+| Server           | Uvicorn                  | ASGI server for FastAPI                         |
+| Containerization | Docker + Docker Compose  | Consistent deployment environments              |
+| Deployment       | Render                   | Cloud hosting platform                          |
+| Database Hosting | Supabase                 | Managed PostgreSQL database                     |
+| Testing          | pytest + TestClient      | Integration + isolated mock testing             |
+| Logging          | python-json-logger       | Structured JSON logging with searchable fields  |
+| Monitoring       | UptimeRobot              | External health check monitoring                |
 
 **Why These Choices:**
 
@@ -404,6 +462,7 @@ SQLModel classes serving dual purpose - Pydantic validation AND SQLAlchemy ORM
 - **SQLModel:** Type-safe database interactions, combines validation and ORM in one tool
 - **PostgreSQL:** Industry-standard relational database, ACID compliance, scalability
 - **Docker:** Ensures consistent environments from development to production
+- **python-json-logger:** Machine-parseable logs for production monitoring and debugging
 
 ---
 
