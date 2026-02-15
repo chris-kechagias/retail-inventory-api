@@ -97,7 +97,7 @@ def get_inventory_value(session: SessionDep):
     result = session.exec(statement).one()
     total_value = result or 0.0
 
-    logger.info(f"Total inventory value successfully calculated: ${total_value:.2f}")
+    logger.info("Total inventory value successfully calculated", extra={"total_value": total_value})
 
     return {"Total Inventory Value $": total_value}
 
@@ -126,7 +126,7 @@ def get_all_products(
     """
     statement = select(Product).offset(offset).limit(limit)
     products = session.exec(statement).all()
-    logger.info(f"Retrieved {len(products)} products from database.")
+    logger.info("Products retrieved successfully", extra={"count": len(products)})
     return products
 
 
@@ -139,18 +139,18 @@ def get_product(product_id: int, session: SessionDep) -> Product:
     """
     Fetches a single product record. Raises 404 if the ID does not exist.
     """
-    logger.info(f"Fetching product with ID: {product_id}")
+    logger.info("Attempting to fetch product", extra={"product_id": product_id})
     product = session.get(Product, product_id)
 
     if not product:
         # Raise the standard HTTP 404 if not found
-        logger.warning(f"Product {product_id} not found - returning 404")
+        logger.warning("Product not found", extra={"product_id": product_id})
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Product with ID {product_id} not found.",
         )
 
-    logger.info(f"Product {product_id} found: {product.name}")
+    logger.info("Product retrieved successfully", extra={"product_id": product_id, "name": product.name})
     return product
 
 
@@ -173,8 +173,8 @@ def create_product(product: ProductCreate, session: SessionDep) -> Product:
     The database automatically handles ID generation and stock-status logic.
     """
     logger.info(
-        f"Creating new product: {product.name} (price: ${product.price}, quantity: {product.quantity})"
-    )
+        "Creating new product", extra={"name": product.name, "price": product.price, "quantity": product.quantity, "in_stock": product.in_stock}
+        )
 
     # 1. Converts the Pydantic schema into a SQLModel Table instance
     db_product = Product.model_validate(product)
@@ -183,7 +183,7 @@ def create_product(product: ProductCreate, session: SessionDep) -> Product:
     session.commit()
     session.refresh(db_product)  # Syncs db_product with the DB-generated ID
 
-    logger.info(f"Product created successfully with ID: {db_product.id}")
+    logger.info("Product created successfully", extra={"product_id": db_product.id})
     return db_product
 
 
@@ -202,13 +202,13 @@ def update_product(
     request body are modified, preserving other existing values.
     """
     logger.info(
-        f"Updating product {product_id} with new quantity: {update_data.quantity}"
+        "Updating product", extra={"product_id": product_id, "quantity": update_data.quantity, "in_stock": update_data.in_stock}
     )
     db_product = session.get(Product, product_id)
 
     if not db_product:
         # Raise 404 if the product to update was not found
-        logger.warning(f"Product {product_id} not found for update - returning 404")
+        logger.warning("Product not found for update", extra={"product_id": product_id})
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Product with ID {product_id} not found.",
@@ -226,8 +226,8 @@ def update_product(
     session.refresh(db_product)
 
     logger.info(
-        f"Product {product_id} updated successfully (new quantity: {db_product.quantity}, in_stock: {db_product.in_stock})"
-    )
+        "Product updated", extra={"product_id": product_id, "quantity": db_product.quantity, "in_stock": db_product.in_stock}
+        )
     return db_product
 
 
@@ -241,12 +241,12 @@ def delete_product(product_id: int, session: SessionDep) -> None:
     Deletes a product from the database.
     Returns HTTP 204 to indicate successful deletion with no response body.
     """
-    logger.info(f"Attempting to delete product {product_id}")
+    logger.info("Attempting to delete product", extra={"product_id": product_id})
     db_product = session.get(Product, product_id)
 
     if not db_product:
         # Raise 404 if the product to delete was not found
-        logger.warning(f"Product {product_id} not found for deletion - returning 404")
+        logger.warning("Product not found for deletion", extra={"product_id": product_id})
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Product with ID {product_id} not found.",
@@ -255,5 +255,5 @@ def delete_product(product_id: int, session: SessionDep) -> None:
     session.delete(db_product)
     session.commit()
 
-    logger.info(f"Product {product_id} deleted successfully")
+    logger.info("Product deleted successfully", extra={"product_id": product_id})
     return None  # 204 No Content does not return a body

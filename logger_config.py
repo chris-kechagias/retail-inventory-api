@@ -1,10 +1,11 @@
 import logging
 import sys
 import os
+from pythonjsonlogger import jsonlogger
 
 # Define the log format string
-LOG_FORMAT = "%(levelname)s: %(asctime)s - %(name)s - %(message)s"
-DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+#LOG_FORMAT = "%(levelname)s: %(asctime)s - %(name)s - %(message)s"
+#DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 def setup_logging():
@@ -22,19 +23,22 @@ def setup_logging():
     if not root_logger.handlers:
         root_logger.setLevel(logging.INFO)
 
-        # Create formatter
-        formatter = logging.Formatter(fmt=LOG_FORMAT, datefmt=DATE_FORMAT)
+        # Create JSON formatter (structured logging)
+        json_formatter = jsonlogger.JsonFormatter(
+            fmt="%(asctime)s %(levelname)s %(name)s %(message)s",
+            rename_fields={"levelname": "level", "asctime": "timestamp"}
+        )
 
         # 1. Console Handler (for Render/Docker)
         console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setFormatter(formatter)
+        console_handler.setFormatter(json_formatter)
         root_logger.addHandler(console_handler)
 
         # 2. File Handler (for local debugging)
         # Create logs directory if it doesn't exist
         os.makedirs("logs", exist_ok=True)
         file_handler = logging.FileHandler("logs/app.log")
-        file_handler.setFormatter(formatter)
+        file_handler.setFormatter(json_formatter)
         root_logger.addHandler(file_handler)
 
 
