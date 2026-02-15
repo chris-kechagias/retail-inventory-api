@@ -6,6 +6,7 @@ It uses SQLModel to unify Pydantic validation (for API requests) and
 SQLAlchemy ORM (for database persistence).
 """
 
+from pydantic import field_validator
 from sqlmodel import SQLModel, Field
 from typing import Optional
 
@@ -37,9 +38,18 @@ class ProductBase(SQLModel):
 
     name: str = Field(
         max_length=50,
+        min_length=1,
         index=True,  # Adding an index for faster name-based searches later
         description="Name of the product.",
     )
+
+    @field_validator("name")
+    @classmethod
+    def name_must_not_be_empty(cls, value):
+        if not value.strip():
+            raise ValueError("Product name must not be empty.")
+        return value.strip()
+    
     price: float = Field(gt=0, description="Unit price, must be greater than zero.")
     quantity: int = Field(
         default=0, ge=0, description="Current stock quantity in the warehouse."
