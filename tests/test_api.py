@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+
 from main import app
 
 client = TestClient(app)
@@ -32,7 +33,7 @@ def test_create_product():
     assert response.status_code == 201 
     data = response.json()
     assert data["name"] == "Test Laptop"
-    assert data["in_stock"] == True
+    assert data["in_stock"]
     assert "id" in data
 
 def test_read_single_product():

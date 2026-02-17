@@ -7,25 +7,25 @@ orchestrating data persistence through SQLModel and PostgreSQL.
 """
 
 # Standard Library Imports
-import time
 import logging
-from typing import Annotated, List, Dict, Any
+import time
 from contextlib import asynccontextmanager
+from typing import Annotated, Dict, List
 
 # Third-Party Imports
-from fastapi import FastAPI, HTTPException, status, Query
-from sqlmodel import select, func
+from fastapi import FastAPI, HTTPException, Query, status
+from sqlmodel import func, select
+
+from database import SessionDep, create_db_and_tables
 
 # Local/First-Party Imports
 from models import HealthResponse, Product, ProductCreate, ProductUpdate
-from database import create_db_and_tables, SessionDep
 
 # ----------------------------------------------------
 # LOGGING & INITIALIZATION
 # ----------------------------------------------------
 START_TIME = time.time()
 
-import logger_config
 
 logger = logging.getLogger(__name__)
 

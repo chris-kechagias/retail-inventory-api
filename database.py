@@ -7,10 +7,11 @@ with the PostgreSQL database.
 """
 
 import os
+from typing import Annotated
+
 from dotenv import load_dotenv
-from typing import Annotated, Generator, Any
 from fastapi import Depends
-from sqlmodel import Session, create_engine, SQLModel
+from sqlmodel import Session, SQLModel, create_engine
 
 # Load environment variables from .env file
 load_dotenv()
