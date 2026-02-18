@@ -4,10 +4,6 @@ import sys
 
 from pythonjsonlogger import jsonlogger
 
-# Define the log format string
-#LOG_FORMAT = "%(levelname)s: %(asctime)s - %(name)s - %(message)s"
-#DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
-
 
 def setup_logging():
     """
