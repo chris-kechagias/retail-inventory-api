@@ -19,7 +19,7 @@ from sqlmodel import func, select
 from database import SessionDep, create_db_and_tables
 
 # Local/First-Party Imports
-from models import HealthResponse, Product, ProductCreate, ProductUpdate
+from app.models import HealthResponse, Product, ProductCreate, ProductUpdate
 
 # ----------------------------------------------------
 # LOGGING & INITIALIZATION
