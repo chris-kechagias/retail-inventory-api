@@ -3,7 +3,7 @@ from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
 from app.database import get_session
-from main import app
+from app.main import app
 
 engine = create_engine(
     "sqlite://",
