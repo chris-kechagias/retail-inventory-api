@@ -16,7 +16,7 @@ from typing import Annotated, Dict, List
 from fastapi import FastAPI, HTTPException, Query, status
 from sqlmodel import func, select
 
-from database import SessionDep, create_db_and_tables
+from app.database import SessionDep, create_db_and_tables
 
 # Local/First-Party Imports
 from app.models import HealthResponse, Product, ProductCreate, ProductUpdate

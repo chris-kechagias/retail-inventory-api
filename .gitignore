@@ -50,3 +50,6 @@ data/products.json.bak
 .pytest_cache/
 .coverage
 htmlcov/
+
+#Temporary Files
+config.md
