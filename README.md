@@ -195,6 +195,10 @@ The API will be available at http://localhost:8000
 
 ## Usage
 
+```bash
+uv run uvicorn app.main:app --reload
+```
+
 ### Testing the API
 
 **1. Create a product:**
@@ -314,14 +318,14 @@ The integration test suite (`tests/test_api.py`) validates real database connect
 
 The mock test suite (`tests/test_mock_api.py`) uses FastAPI's dependency override pattern to swap Supabase for an in-memory SQLite database, ensuring zero production impact:
 
-| Test                                | Purpose                                                   |
-| ----------------------------------- | --------------------------------------------------------- |
-| `test_create_product_isolated`      | Tests product creation without touching real database     |
-| `test_read_products_isolated`       | Tests product listing in isolated environment             |
-| `test_product_not_found_isolated`   | Tests 404 response in isolated environment                |
-| `test_create_product_empty_name`    | Validates rejection of empty product names                |
-| `test_create_product_negative_price`| Validates rejection of negative prices (gt=0)             |
-| `test_create_product_whitespace_name`| Validates rejection of whitespace-only names             |
+| Test                                  | Purpose                                               |
+| ------------------------------------- | ----------------------------------------------------- |
+| `test_create_product_isolated`        | Tests product creation without touching real database |
+| `test_read_products_isolated`         | Tests product listing in isolated environment         |
+| `test_product_not_found_isolated`     | Tests 404 response in isolated environment            |
+| `test_create_product_empty_name`      | Validates rejection of empty product names            |
+| `test_create_product_negative_price`  | Validates rejection of negative prices (gt=0)         |
+| `test_create_product_whitespace_name` | Validates rejection of whitespace-only names          |
 
 **Key pattern — dependency override:**
 
@@ -442,19 +446,19 @@ SQLModel classes serving dual purpose - Pydantic validation AND SQLAlchemy ORM, 
 
 ## Tech Stack Details
 
-| Component        | Technology               | Purpose                                         |
-| ---------------- | ------------------------ | ----------------------------------------------- |
-| Language         | Python 3.11+             | Primary development language                    |
-| Framework        | FastAPI                  | High-performance async REST API                 |
-| ORM              | SQLModel                 | Combines Pydantic validation + SQLAlchemy ORM   |
-| Database         | PostgreSQL 15 (Supabase) | Production-grade relational database            |
-| Server           | Uvicorn                  | ASGI server for FastAPI                         |
-| Containerization | Docker + Docker Compose  | Consistent deployment environments              |
-| Deployment       | Render                   | Cloud hosting platform                          |
-| Database Hosting | Supabase                 | Managed PostgreSQL database                     |
-| Testing          | pytest + TestClient      | Integration + isolated mock testing             |
-| Logging          | python-json-logger       | Structured JSON logging with searchable fields  |
-| Monitoring       | UptimeRobot              | External health check monitoring                |
+| Component        | Technology               | Purpose                                        |
+| ---------------- | ------------------------ | ---------------------------------------------- |
+| Language         | Python 3.11+             | Primary development language                   |
+| Framework        | FastAPI                  | High-performance async REST API                |
+| ORM              | SQLModel                 | Combines Pydantic validation + SQLAlchemy ORM  |
+| Database         | PostgreSQL 15 (Supabase) | Production-grade relational database           |
+| Server           | Uvicorn                  | ASGI server for FastAPI                        |
+| Containerization | Docker + Docker Compose  | Consistent deployment environments             |
+| Deployment       | Render                   | Cloud hosting platform                         |
+| Database Hosting | Supabase                 | Managed PostgreSQL database                    |
+| Testing          | pytest + TestClient      | Integration + isolated mock testing            |
+| Logging          | python-json-logger       | Structured JSON logging with searchable fields |
+| Monitoring       | UptimeRobot              | External health check monitoring               |
 
 **Why These Choices:**
 
