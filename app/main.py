@@ -28,6 +28,9 @@ START_TIME = time.time()
 
 logger = logging.getLogger(__name__)
 
+# some changes here!
+
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -53,6 +56,14 @@ app = FastAPI(
     version="1.2.0",  # Updated to reflect Mock tests, input validation, structured JSON logging milestone
     lifespan=lifespan,
 )
+
+logger.info(
+       "main:start", {
+        "paok":4,
+        "aris": 3
+       }
+    )
+
 
 app.include_router(products.router)
 
