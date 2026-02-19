@@ -1,84 +1,27 @@
 """
-API Gateway: FastAPI application entry point.
-
-This module defines the RESTful endpoints for the Retail Inventory system.
-It acts as the Presentation Layer, handling HTTP requests/responses and
-orchestrating data persistence through SQLModel and PostgreSQL.
+Docstring for app.routers.products
 """
-
 # Standard Library Imports
 import logging
-import time
-from contextlib import asynccontextmanager
 from typing import Annotated, Dict, List
 
 # Third-Party Imports
-from fastapi import FastAPI, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, status
 from sqlmodel import func, select
 
-from database import SessionDep, create_db_and_tables
-
 # Local/First-Party Imports
-from models import HealthResponse, Product, ProductCreate, ProductUpdate
+from app.database import SessionDep
+from app.models import Product, ProductCreate, ProductUpdate
 
-# ----------------------------------------------------
-# LOGGING & INITIALIZATION
-# ----------------------------------------------------
-START_TIME = time.time()
-
-
+router = APIRouter()
 logger = logging.getLogger(__name__)
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    Handles the application startup and shutdown events.
-
-    Ensures the database engine is ready and tables are created before
-    the API starts accepting traffic. This replaces the deprecated @app.on_event logic.
-    """
-    logger.info(
-        "Lifespan Startup: Verifying database connectivity and creating tables."
-    )
-    # This replaces the old @app.on_event("startup") logic.
-    # It ensures the database is ready before the first request arrives.
-    create_db_and_tables()
-    yield
-    logger.info("Lifespan Shutdown: Cleaning up resources.")
-
-
-app = FastAPI(
-    title="Retail Inventory API",
-    description="A robust FastAPI service for managing warehouse stock using PostgreSQL and SQLModel.",
-    version="1.2.0",  # Updated to reflect Mock tests, input validation, structured JSON logging milestone
-    lifespan=lifespan,
-)
-
-@app.head("/health")
-@app.get("/health", response_model=HealthResponse, tags=["System"])
-def health_check():
-    return HealthResponse(
-        status="healthy",
-        version="1.2.0",
-        uptime=time.time() - START_TIME
-    )
-
-@app.get("/")
-def read_root():
-    return {
-        "message": "Retail Inventory API",
-        "version": "1.2.0",
-        "docs": "/docs",
-        "endpoints": "/products"
-    }
 
 # ----------------------------------------------------
 # 1. ANALYTICS ROUTES
 # ----------------------------------------------------
 
 
-@app.get(
+@router.get(
     "/products/total_value",
     summary="Calculate the total monetary value of the current inventory",
     response_model=Dict[str, float],
@@ -107,7 +50,7 @@ def get_inventory_value(session: SessionDep):
 # ----------------------------------------------------
 
 
-@app.get(
+@router.get(
     "/products",
     response_model=List[Product],
     summary="List all products with pagination",
@@ -130,7 +73,7 @@ def get_all_products(
     return products
 
 
-@app.get(
+@router.get(
     "/products/{product_id}",
     response_model=Product,
     summary="Get product by ID",
@@ -159,7 +102,7 @@ def get_product(product_id: int, session: SessionDep) -> Product:
 # ----------------------------------------------------
 
 
-@app.post(
+@router.post(
     "/products",
     response_model=Product,
     status_code=status.HTTP_201_CREATED,
@@ -187,7 +130,7 @@ def create_product(product: ProductCreate, session: SessionDep) -> Product:
     return db_product
 
 
-@app.patch(
+@router.patch(
     "/products/{product_id}",
     response_model=Product,
     summary="Partial update of a product's quantity and/or stock status",
@@ -231,7 +174,7 @@ def update_product(
     return db_product
 
 
-@app.delete(
+@router.delete(
     "/products/{product_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Remove a product",
