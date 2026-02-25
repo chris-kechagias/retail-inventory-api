@@ -1,3 +1,11 @@
+"""
+Data Architecture: SQLModel Schemas and Tables.
+
+This module defines the data contracts for the Retail Inventory API.
+It uses SQLModel to unify Pydantic validation (for API requests) and
+SQLAlchemy ORM (for database persistence).
+"""
+
 from enum import Enum
 from typing import Optional
 
