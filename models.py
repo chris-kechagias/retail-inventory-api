@@ -48,8 +48,39 @@ class ProductBase(SQLModel):
         if not value.strip():
             raise ValueError("Product name must not be empty.")
         return value.strip()
+    
+    color: str = Field(
+        default=None,
+        max_length=30,
+        min_length=1,
+        index=True,  # Adding an index for faster color-based searches later
+        description="Color of the product, optional but if provided must be a non-empty string.",
+    )
+
+    @field_validator("color")
+    @classmethod
+    def color_must_not_be_empty(cls, value):
+        if value is not None and not value.strip():
+            raise ValueError("Color must not be an empty string if provided.")
+        return value.strip() if value is not None else None
 
     price: float = Field(gt=0, description="Unit price, must be greater than zero.")
+    
+    collection: str = Field(
+        default=None,
+        max_length=10,
+        min_length=4,
+        index=True,
+        description="Flag indicating under which collection the product is released"
+    )
+
+    @field_validator("collection")
+    @classmethod
+    def collection_must_not_be_empty(cls, value):
+        if value is not None and not value.strip():
+            raise ValueError("Collection must not be an empty string if provided.")
+        return value.strip() if value is not None else None
+    
     coming_soon: bool = Field(
         default=False,
         description="Flag indicating an upcoming product that will be available soon.",
@@ -74,21 +105,6 @@ class ProductVariantBase(SQLModel):
         default=Size.OS,
         description="Size of the product variant, must be one of the predefined sizes.",
     )
-    color: Optional[str] = Field(
-        default=None,
-        max_length=30,
-        min_length=1,
-        index=True,  # Adding an index for faster color-based searches later
-        description="Color of the product variant, optional but if provided must be a non-empty string.",
-    )
-
-    @field_validator("color")
-    @classmethod
-    def color_must_not_be_empty(cls, value):
-        if value is not None and not value.strip():
-            raise ValueError("Color must not be an empty string if provided.")
-        return value.strip() if value is not None else None
-
     quantity: int = Field(
         default=0, ge=0, description="Current stock quantity in the warehouse."
     )
@@ -169,8 +185,11 @@ class ProductUpdate(SQLModel):
 
     category: Optional[Category] = None
     name: Optional[str] = Field(default=None, max_length=50, min_length=1)
+    color: Optional[str] = Field(default=None, max_length=30, min_length=1)
     price: Optional[float] = Field(default=None, gt=0)
+    collection: Optional[str] = Field(default=None, max_length=10, min_length=4)
     coming_soon: Optional[bool] = None
+    
 
 
 class ProductVariantUpdate(SQLModel):
@@ -183,6 +202,5 @@ class ProductVariantUpdate(SQLModel):
     """
 
     size: Optional[Size] = None
-    color: Optional[str] = Field(default=None, max_length=30, min_length=1)
     quantity: Optional[int] = Field(default=None, ge=0)
     in_stock: Optional[bool] = None
