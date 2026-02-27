@@ -3,13 +3,12 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query, status
 
 from database import SessionDep
-from models import (
-    Product,
-)
+from models import Product, ProductVariant
 from services import (
     get_all_products,
     get_inventory_value,
-    get_product
+    get_product,
+    get_product_variants,
 )
 
 router = APIRouter()
@@ -59,3 +58,21 @@ def get_product_endpoint(product_id: int, session: SessionDep) -> Product:
             detail=f"Product with ID {product_id} not found.",
         )
     return product
+
+
+@router.get(
+    "/products/{product_id}/variants",
+    response_model=list[ProductVariant],
+    summary="Get all variants for a product",
+)
+def get_product_variants_endpoint(
+    product_id: int,
+    session: SessionDep,
+) -> list[ProductVariant]:
+    product = get_product(product_id, session)
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with ID {product_id} not found.",
+        )
+    return get_product_variants(product_id, session)
