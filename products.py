@@ -3,7 +3,13 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query, status
 
 from database import SessionDep
-from models import Product, ProductCreate, ProductVariant, ProductVariantCreate
+from models import (
+    Product,
+    ProductCreate,
+    ProductUpdate,
+    ProductVariant,
+    ProductVariantCreate,
+)
 from services import (
     create_product,
     create_product_variant,
@@ -11,6 +17,7 @@ from services import (
     get_inventory_value,
     get_product,
     get_product_variants,
+    update_product,
 )
 
 router = APIRouter()
@@ -111,3 +118,20 @@ def create_product_variant_endpoint(
             detail=f"Product with ID {product_id} not found.",
         )
     return create_product_variant(product_id, variant, session)
+
+
+@router.patch(
+    "/products/{product_id}",
+    response_model=Product,
+    summary="Partial update of a product",
+)
+def update_product_endpoint(
+    product_id: int, update_data: ProductUpdate, session: SessionDep
+) -> Product:
+    product = get_product(product_id, session)
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with ID {product_id} not found.",
+        )
+    return update_product(product_id, update_data, session)
