@@ -14,6 +14,7 @@ from models import (
 from services import (
     create_product,
     create_product_variant,
+    delete_product,
     get_all_products,
     get_inventory_value,
     get_product,
@@ -157,3 +158,18 @@ def update_product_variant_endpoint(
             detail=f"Variant with ID {variant_id} not found.",
         )
     return variant
+
+
+@router.delete(
+    "/products/{product_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Remove a product",
+)
+def delete_product_endpoint(product_id: int, session: SessionDep) -> None:
+    product = get_product(product_id, session)
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with ID {product_id} not found.",
+        )
+    delete_product(product_id, session)
