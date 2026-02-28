@@ -9,6 +9,7 @@ from models import (
     ProductUpdate,
     ProductVariant,
     ProductVariantCreate,
+    ProductVariantUpdate,
 )
 from services import (
     create_product,
@@ -18,6 +19,7 @@ from services import (
     get_product,
     get_product_variants,
     update_product,
+    update_product_variant,
 )
 
 router = APIRouter()
@@ -135,3 +137,23 @@ def update_product_endpoint(
             detail=f"Product with ID {product_id} not found.",
         )
     return update_product(product_id, update_data, session)
+
+
+@router.patch(
+    "/products/{product_id}/variants/{variant_id}",
+    response_model=ProductVariant,
+    summary="Partial update of a product's variants",
+)
+def update_product_variant_endpoint(
+    product_id: int,
+    variant_id: int,
+    update_data: ProductVariantUpdate,
+    session: SessionDep,
+) -> ProductVariant:
+    variant = update_product_variant(variant_id, update_data, session)
+    if not variant:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Variant with ID {variant_id} not found.",
+        )
+    return variant
