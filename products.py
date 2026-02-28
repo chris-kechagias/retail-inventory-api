@@ -3,13 +3,14 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query, status
 
 from database import SessionDep
-from models import Product, ProductVariant, ProductCreate
+from models import Product, ProductCreate, ProductVariant, ProductVariantCreate
 from services import (
+    create_product,
+    create_product_variant,
     get_all_products,
     get_inventory_value,
     get_product,
     get_product_variants,
-    create_product,
 )
 
 router = APIRouter()
@@ -78,9 +79,11 @@ def get_product_variants_endpoint(
         )
     return get_product_variants(product_id, session)
 
+
 # ----------------------------------------------------
 # 3. WRITE ROUTES (POST/PATCH/DELETE)
 # ----------------------------------------------------
+
 
 @router.post(
     "/products",
@@ -90,3 +93,21 @@ def get_product_variants_endpoint(
 )
 def create_product_endpoint(product: ProductCreate, session: SessionDep) -> Product:
     return create_product(product, session)
+
+
+@router.post(
+    "/products/{product_id}/variants",
+    response_model=ProductVariant,
+    status_code=status.HTTP_201_CREATED,
+    summary="Add variants for an existing product",
+)
+def create_product_variant_endpoint(
+    product_id: int, variant: ProductVariantCreate, session: SessionDep
+) -> ProductVariant:
+    product = get_product(product_id, session)
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Product with ID {product_id} not found.",
+        )
+    return create_product_variant(product_id, variant, session)
