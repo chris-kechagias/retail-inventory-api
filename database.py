@@ -5,6 +5,7 @@ This module configures the SQLAlchemy engine via SQLModel and defines
 the dependency injection pattern used by the API endpoints to interact
 with the PostgreSQL database.
 """
+
 # Standard Library Imports
 from typing import Annotated
 
@@ -14,7 +15,6 @@ from sqlmodel import Session, SQLModel, create_engine
 
 # Local/First-Party Imports
 from config import config
-
 
 # The Engine is the 'source' of connectivity.
 # Database URL is constructed in config.py via pydantic-settings
