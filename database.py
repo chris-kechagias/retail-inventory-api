@@ -17,9 +17,11 @@ from sqlmodel import Session, SQLModel, create_engine
 from config import config
 
 # The Engine is the 'source' of connectivity.
-# Database URL is constructed in config.py via pydantic-settings
 # echo=True logs all generated SQL statements to the terminal—great for debugging!
-engine = create_engine(config.database_url, echo=True)
+engine = create_engine(
+    f"postgresql://{config.db_username}:{config.db_password}@localhost:5432/retail_inventory_db",
+    echo=True,
+)
 
 
 def create_db_and_tables():
