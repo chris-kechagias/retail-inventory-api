@@ -1,3 +1,7 @@
+# Standard Library Imports
+import time
+
+# Third-Party Imports
 from pydantic_settings import BaseSettings
 
 
@@ -7,9 +11,11 @@ class Config(BaseSettings):
     debug: bool = False
     db_username: str = ""
     db_password: str = ""
+    start_time: float = time.time()
 
     class Config:
         env_file = ".env"
+
 
 @property
 def database_url(self) -> str:
@@ -19,5 +25,6 @@ def database_url(self) -> str:
     postgresql://username:password@host:port/database
     """
     return f"postgresql://{self.db_username}:{self.db_password}@localhost:5432/retail_inventory_db"
+
 
 config = Config()
