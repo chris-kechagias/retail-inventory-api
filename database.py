@@ -5,20 +5,21 @@ This module configures the SQLAlchemy engine via SQLModel and defines
 the dependency injection pattern used by the API endpoints to interact
 with the PostgreSQL database.
 """
-
-import os
+# Standard Library Imports
 from typing import Annotated
 
-from dotenv import load_dotenv
+# Third-Party Imports
 from fastapi import Depends
 from sqlmodel import Session, SQLModel, create_engine
 
-load_dotenv()
-# Retrieve the PostgreSQL connection string
-DATABASE_URL = f"postgresql://{os.getenv('DB_USERNAME')}:{os.getenv('DB_PASSWORD')}@localhost:5432/retail_inventory_db"
+# Local/First-Party Imports
+from config import config
+
+
 # The Engine is the 'source' of connectivity.
+# Database URL is constructed in config.py via pydantic-settings
 # echo=True logs all generated SQL statements to the terminal—great for debugging!
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(config.database_url, echo=True)
 
 
 def create_db_and_tables():
