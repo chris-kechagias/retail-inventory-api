@@ -36,7 +36,7 @@ router = APIRouter()
     summary="Calculate the total monetary value of the current inventory",
     response_model=dict[str, float],
 )
-def get_inventory_value_endpoint(session: SessionDep):
+def get_inventory_value_router(session: SessionDep):
     return get_inventory_value(session)
 
 
@@ -50,7 +50,7 @@ def get_inventory_value_endpoint(session: SessionDep):
     response_model=list[Product],
     summary="List all products with pagination",
 )
-def get_all_products_endpoint(
+def get_all_products_router(
     session: SessionDep,
     offset: int = 0,
     limit: Annotated[int, Query(le=100)] = 100,
@@ -63,7 +63,7 @@ def get_all_products_endpoint(
     response_model=Product,
     summary="Get product by ID",
 )
-def get_product_endpoint(product_id: int, session: SessionDep) -> Product:
+def get_product_router(product_id: int, session: SessionDep) -> Product:
     product = get_product(product_id, session)
     if not product:
         raise HTTPException(
@@ -78,7 +78,7 @@ def get_product_endpoint(product_id: int, session: SessionDep) -> Product:
     response_model=list[ProductVariant],
     summary="Get all variants for a product",
 )
-def get_product_variants_endpoint(
+def get_product_variants_router(
     product_id: int,
     session: SessionDep,
 ) -> list[ProductVariant]:
@@ -102,7 +102,7 @@ def get_product_variants_endpoint(
     status_code=status.HTTP_201_CREATED,
     summary="Add a new product to the inventory",
 )
-def create_product_endpoint(product: ProductCreate, session: SessionDep) -> Product:
+def create_product_router(product: ProductCreate, session: SessionDep) -> Product:
     return create_product(product, session)
 
 
@@ -112,7 +112,7 @@ def create_product_endpoint(product: ProductCreate, session: SessionDep) -> Prod
     status_code=status.HTTP_201_CREATED,
     summary="Add variants for an existing product",
 )
-def create_product_variant_endpoint(
+def create_product_variant_router(
     product_id: int, variant: ProductVariantCreate, session: SessionDep
 ) -> ProductVariant:
     product = get_product(product_id, session)
@@ -129,7 +129,7 @@ def create_product_variant_endpoint(
     response_model=Product,
     summary="Partial update of a product",
 )
-def update_product_endpoint(
+def update_product_router(
     product_id: int, update_data: ProductUpdate, session: SessionDep
 ) -> Product:
     product = get_product(product_id, session)
@@ -146,7 +146,7 @@ def update_product_endpoint(
     response_model=ProductVariant,
     summary="Partial update of a product's variants",
 )
-def update_product_variant_endpoint(
+def update_product_variant_router(
     product_id: int,
     variant_id: int,
     update_data: ProductVariantUpdate,
@@ -166,7 +166,7 @@ def update_product_variant_endpoint(
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Remove a product",
 )
-def delete_product_endpoint(product_id: int, session: SessionDep) -> None:
+def delete_product_router(product_id: int, session: SessionDep) -> None:
     product = get_product(product_id, session)
     if not product:
         raise HTTPException(
@@ -181,7 +181,7 @@ def delete_product_endpoint(product_id: int, session: SessionDep) -> None:
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Remove a product's variants",
 )
-def delete_product_variant_endpoint(
+def delete_product_variant_router(
     product_id: int,
     variant_id: int,
     session: SessionDep,
