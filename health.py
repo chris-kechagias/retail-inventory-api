@@ -11,7 +11,7 @@ from models import HealthResponse
 router = APIRouter()
 
 
-@router.head("/health")
+@router.head("/health", tags=["System"])
 @router.get("/health", response_model=HealthResponse, tags=["System"])
 def health_check():
     return HealthResponse(
