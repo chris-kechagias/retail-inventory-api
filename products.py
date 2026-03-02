@@ -12,16 +12,16 @@ from models import (
     ProductVariantUpdate,
 )
 from services import (
-    create_product,
-    create_product_variant,
-    delete_product,
-    delete_product_variant,
-    get_all_products,
-    get_inventory_value,
-    get_product,
-    get_product_variants,
-    update_product,
-    update_product_variant,
+    create_product_controller,
+    create_product_variant_controller,
+    delete_product_controller,
+    delete_product_variant_controller,
+    get_all_products_controller,
+    get_inventory_value_controller,
+    get_product_controller,
+    get_product_variants_controller,
+    update_product_controller,
+    update_product_variant_controller,
 )
 
 router = APIRouter()
@@ -37,7 +37,7 @@ router = APIRouter()
     response_model=dict[str, float],
 )
 def get_inventory_value_router(session: SessionDep):
-    return get_inventory_value(session)
+    return get_inventory_value_controller(session)
 
 
 # ----------------------------------------------------
@@ -55,7 +55,7 @@ def get_all_products_router(
     offset: int = 0,
     limit: Annotated[int, Query(le=100)] = 100,
 ):
-    return get_all_products(session, offset, limit)
+    return get_all_products_controller(session, offset, limit)
 
 
 @router.get(
@@ -64,7 +64,7 @@ def get_all_products_router(
     summary="Get product by ID",
 )
 def get_product_router(product_id: int, session: SessionDep) -> Product:
-    product = get_product(product_id, session)
+    product = get_product_controller(product_id, session)
     if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -82,13 +82,13 @@ def get_product_variants_router(
     product_id: int,
     session: SessionDep,
 ) -> list[ProductVariant]:
-    product = get_product(product_id, session)
+    product = get_product_controller(product_id, session)
     if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Product with ID {product_id} not found.",
         )
-    return get_product_variants(product_id, session)
+    return get_product_variants_controller(product_id, session)
 
 
 # ----------------------------------------------------
@@ -103,7 +103,7 @@ def get_product_variants_router(
     summary="Add a new product to the inventory",
 )
 def create_product_router(product: ProductCreate, session: SessionDep) -> Product:
-    return create_product(product, session)
+    return create_product_controller(product, session)
 
 
 @router.post(
@@ -115,13 +115,13 @@ def create_product_router(product: ProductCreate, session: SessionDep) -> Produc
 def create_product_variant_router(
     product_id: int, variant: ProductVariantCreate, session: SessionDep
 ) -> ProductVariant:
-    product = get_product(product_id, session)
+    product = get_product_controller(product_id, session)
     if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Product with ID {product_id} not found.",
         )
-    return create_product_variant(product_id, variant, session)
+    return create_product_variant_controller(product_id, variant, session)
 
 
 @router.patch(
@@ -132,13 +132,13 @@ def create_product_variant_router(
 def update_product_router(
     product_id: int, update_data: ProductUpdate, session: SessionDep
 ) -> Product:
-    product = get_product(product_id, session)
+    product = get_product_controller(product_id, session)
     if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Product with ID {product_id} not found.",
         )
-    return update_product(product_id, update_data, session)
+    return update_product_controller(product_id, update_data, session)
 
 
 @router.patch(
@@ -152,7 +152,7 @@ def update_product_variant_router(
     update_data: ProductVariantUpdate,
     session: SessionDep,
 ) -> ProductVariant:
-    variant = update_product_variant(variant_id, update_data, session)
+    variant = update_product_variant_controller(variant_id, update_data, session)
     if not variant:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -167,13 +167,13 @@ def update_product_variant_router(
     summary="Remove a product",
 )
 def delete_product_router(product_id: int, session: SessionDep) -> None:
-    product = get_product(product_id, session)
+    product = get_product_controller(product_id, session)
     if not product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Product with ID {product_id} not found.",
         )
-    delete_product(product_id, session)
+    delete_product_controller(product_id, session)
 
 
 @router.delete(
@@ -186,7 +186,7 @@ def delete_product_variant_router(
     variant_id: int,
     session: SessionDep,
 ) -> None:
-    variant = delete_product_variant(variant_id, session)
+    variant = delete_product_variant_controller(variant_id, session)
     if not variant:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
