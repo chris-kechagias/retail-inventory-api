@@ -11,6 +11,7 @@ class Config(BaseSettings):
     debug: bool = False
     db_username: str = ""
     db_password: str = ""
+    db_host: str = "localhost"
     start_time: float = time.time()
 
     class Config:
