@@ -18,7 +18,7 @@ from models import (
 )
 
 
-def get_inventory_value(session: SessionDep):
+def get_inventory_value_controller(session: SessionDep):
     """
     Calculates the aggregate value (price * quantity) of all inventory.
 
@@ -36,7 +36,7 @@ def get_inventory_value(session: SessionDep):
     return {"Total Inventory Value $": total_value}
 
 
-def get_all_products(
+def get_all_products_controller(
     session: SessionDep,
     offset: int = 0,
     limit: int = 100,
@@ -53,7 +53,7 @@ def get_all_products(
     return products
 
 
-def get_product(product_id: int, session: SessionDep) -> Optional[Product]:
+def get_product_controller(product_id: int, session: SessionDep) -> Optional[Product]:
     """
     Fetches a single product record.
     """
@@ -61,7 +61,9 @@ def get_product(product_id: int, session: SessionDep) -> Optional[Product]:
     return product
 
 
-def get_product_variants(product_id: int, session: SessionDep) -> list[ProductVariant]:
+def get_product_variants_controller(
+    product_id: int, session: SessionDep
+) -> list[ProductVariant]:
     """
     Fetches the variants of the selected product.
     """
@@ -70,7 +72,7 @@ def get_product_variants(product_id: int, session: SessionDep) -> list[ProductVa
     return variants
 
 
-def create_product(product: ProductCreate, session: SessionDep) -> Product:
+def create_product_controller(product: ProductCreate, session: SessionDep) -> Product:
     """
     Persists a new product record.
 
@@ -88,7 +90,7 @@ def create_product(product: ProductCreate, session: SessionDep) -> Product:
     return db_product
 
 
-def create_product_variant(
+def create_product_variant_controller(
     product_id: int, variant: ProductVariantCreate, session: SessionDep
 ) -> ProductVariant:
     """
@@ -108,7 +110,7 @@ def create_product_variant(
     return db_variant
 
 
-def update_product(
+def update_product_controller(
     product_id: int, update_data: ProductUpdate, session: SessionDep
 ) -> Product:
     """
@@ -138,7 +140,7 @@ def update_product(
     return db_product
 
 
-def update_product_variant(
+def update_product_variant_controller(
     variant_id: int, update_data: ProductVariantUpdate, session: SessionDep
 ) -> ProductVariant:
     """
@@ -166,7 +168,9 @@ def update_product_variant(
     return db_variant
 
 
-def delete_product(product_id: int, session: SessionDep) -> Optional[Product]:
+def delete_product_controller(
+    product_id: int, session: SessionDep
+) -> Optional[Product]:
     """
     Deletes a product from the database.
     """
@@ -181,7 +185,7 @@ def delete_product(product_id: int, session: SessionDep) -> Optional[Product]:
     return db_product
 
 
-def delete_product_variant(
+def delete_product_variant_controller(
     variant_id: int, session: SessionDep
 ) -> Optional[ProductVariant]:
     """
