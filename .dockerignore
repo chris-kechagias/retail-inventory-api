@@ -1,1 +1,12 @@
-.venv
+*
+
+!pyproject.toml
+!uv.lock
+!main.py
+!config.py
+!database.py
+!models.py
+!services.py
+!products.py
+!health.py
+!home.py
