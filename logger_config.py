@@ -26,7 +26,6 @@ def setup_logging():
         json_formatter = jsonlogger.JsonFormatter(
             fmt="%(asctime)s %(levelname)s %(name)s %(message)s",
             rename_fields={"levelname": "level", "asctime": "timestamp"},
-            indent=2,
         )
 
         # 1. Console Handler (for Render/Docker)

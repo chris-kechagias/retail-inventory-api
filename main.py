@@ -12,6 +12,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 # Local/First-Party Imports
+import logger_config  # noqa: F401
 from config import config
 from database import create_db_and_tables
 from health import router as health_router
