@@ -41,5 +41,9 @@ Thumbs.db
 .env
 .env.local
 
+# Logs
+logs/
+*.log
+
 # Temp files
 v2-playbook.md
