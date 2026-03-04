@@ -75,7 +75,8 @@ def get_product_controller(product_id: int, session: SessionDep) -> Optional[Pro
     """
     logger.info("Attempting to fetch product", extra={"product_id": product_id})
     product = session.get(Product, product_id)
-    logger.info("Product fetched successfully", extra={"product_id": product_id})
+    if product:
+        logger.info("Product fetched successfully", extra={"product_id": product_id})
     return product
 
 
@@ -190,6 +191,7 @@ def update_product_controller(
     db_product = session.get(Product, product_id)
     # Return None if there is no product
     if not db_product:
+        logger.warning("Product not found", extra={"product_id": product_id})
         return None
 
     # Update only the fields provided in update_data
@@ -240,8 +242,9 @@ def update_product_variant_controller(
     )
 
     db_variant = session.get(ProductVariant, variant_id)
-    # Return None if there is no product
+    # Return None if there is no variant
     if not db_variant:
+        logger.warning("Product variant not found", extra={"variant_id": variant_id})
         return None
 
     # Update only the fields provided in update_data
