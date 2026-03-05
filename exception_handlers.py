@@ -1,7 +1,16 @@
+# Standard Library Imports
+import logging
 from datetime import datetime, timezone
 from typing import Any, Dict
 
+# Third-Party Imports
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
+# Local/First-Party Imports
 from exceptions import AppException, ValidationException
+
+logger = logging.getLogger(__name__)
 
 
 def create_error_response(exception: AppException) -> Dict[str, Any]:
@@ -22,10 +31,40 @@ def create_error_response(exception: AppException) -> Dict[str, Any]:
 
 
 async def app_exception_handler(request, exception: AppException):
-    # log + return JSONResponse
-    pass
+    """Handle all custom application exceptions"""
+
+    # Log the error with context and return JSONResponse
+    logger.warning(
+        f"Application error:{exception.error_code} - {exception.message}",
+        extra={
+            "error_code": exception.error_code,
+            "status_code": exception.status_code,
+            "path": request.url.path,
+            "method": request.method,
+            "details": exception.details,
+        },
+    )
+    return JSONResponse(
+        status_code=exception.status_code,
+        content=create_error_response(exception),
+    )
 
 
-async def validation_exception_handler(request, exception: ValidationException):
+async def validation_exception_handler(request, exception: RequestValidationError):
+    """Handle Pydantic/FastAPI validation exceptions"""
+
     # log + return JSONResponse
-    pass
+    logger.warning(
+        "Validation error",
+        extra={
+            "path": request.url.path,
+            "method": request.method,
+            "errors": exception.errors(),
+        },
+    )
+    return JSONResponse(
+        status_code=422,
+        content=create_error_response(
+            ValidationException(details={"errors": exception.errors()})
+        ),
+    )
