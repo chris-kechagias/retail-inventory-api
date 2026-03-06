@@ -10,3 +10,6 @@
 !products.py
 !health.py
 !home.py
+!exceptions.py
+!exception_handlers.py
+!logger_config.py
