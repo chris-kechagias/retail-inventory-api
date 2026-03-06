@@ -6,10 +6,11 @@ import logging
 from typing import Annotated
 
 # Third-Party Imports
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Query, status
 
 # Local/First-Party Imports
 from database import SessionDep
+from exceptions import ProductNotFoundException, ProductVariantNotFoundException
 from models import (
     Product,
     ProductCreate,
@@ -74,12 +75,7 @@ def get_all_products_router(
 def get_product_router(product_id: int, session: SessionDep) -> Product:
     product = get_product_controller(product_id, session)
     if not product:
-        # Raise the standard HTTP 404 if not found
-        logger.warning("Product not found", extra={"product_id": product_id})
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Product with ID {product_id} not found.",
-        )
+        raise ProductNotFoundException(product_id)
     return product
 
 
@@ -94,12 +90,7 @@ def get_product_variants_router(
 ) -> list[ProductVariant]:
     product = get_product_controller(product_id, session)
     if not product:
-        # Raise the standard HTTP 404 if not found
-        logger.warning("Product not found", extra={"product_id": product_id})
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Product with ID {product_id} not found.",
-        )
+        raise ProductNotFoundException(product_id)
     return get_product_variants_controller(product_id, session)
 
 
@@ -129,12 +120,7 @@ def create_product_variant_router(
 ) -> ProductVariant:
     product = get_product_controller(product_id, session)
     if not product:
-        # Raise the standard HTTP 404 if not found
-        logger.warning("Product not found", extra={"product_id": product_id})
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Product with ID {product_id} not found.",
-        )
+        raise ProductNotFoundException(product_id)
     return create_product_variant_controller(product_id, variant, session)
 
 
@@ -148,12 +134,7 @@ def update_product_router(
 ) -> Product:
     product = get_product_controller(product_id, session)
     if not product:
-        # Raise the standard HTTP 404 if not found
-        logger.warning("Product not found", extra={"product_id": product_id})
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Product with ID {product_id} not found.",
-        )
+        raise ProductNotFoundException(product_id)
     return update_product_controller(product_id, update_data, session)
 
 
@@ -170,12 +151,7 @@ def update_product_variant_router(
 ) -> ProductVariant:
     variant = update_product_variant_controller(variant_id, update_data, session)
     if not variant:
-        # Raise the standard HTTP 404 if not found
-        logger.warning("Product variant not found", extra={"variant_id": variant_id})
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Variant with ID {variant_id} not found.",
-        )
+        raise ProductVariantNotFoundException(variant_id)
     return variant
 
 
@@ -187,12 +163,7 @@ def update_product_variant_router(
 def delete_product_router(product_id: int, session: SessionDep) -> None:
     product = get_product_controller(product_id, session)
     if not product:
-        # Raise the standard HTTP 404 if not found
-        logger.warning("Product not found", extra={"product_id": product_id})
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Product with ID {product_id} not found.",
-        )
+        raise ProductNotFoundException(product_id)
     delete_product_controller(product_id, session)
 
 
@@ -208,9 +179,4 @@ def delete_product_variant_router(
 ) -> None:
     variant = delete_product_variant_controller(variant_id, session)
     if not variant:
-        # Raise the standard HTTP 404 if not found
-        logger.warning("Product variant not found", extra={"variant_id": variant_id})
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Variant with ID {variant_id} not found.",
-        )
+        raise ProductVariantNotFoundException(variant_id)
