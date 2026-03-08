@@ -7,6 +7,7 @@ with the PostgreSQL database.
 """
 
 # Standard Library Imports
+import logging
 from typing import Annotated
 
 # Third-Party Imports
@@ -15,6 +16,8 @@ from sqlmodel import Session, SQLModel, create_engine
 
 # Local/First-Party Imports
 from config import config
+
+logger = logging.getLogger(__name__)
 
 # The Engine is the 'source' of connectivity.
 # echo=True logs all generated SQL statements to the terminal—great for debugging!
@@ -32,6 +35,7 @@ def create_db_and_tables():
     the database schema stays in sync with your Python models.
     """
     SQLModel.metadata.create_all(engine)
+    logger.info("Database tables created or verified successfully.")
 
 
 def get_session():

@@ -6,7 +6,8 @@ COPY pyproject.toml .
 COPY uv.lock .
 
 RUN pip install uv
-RUN uv sync --frozen --no-dev 
+RUN uv sync --frozen --no-dev
+
 COPY . .
 
 EXPOSE 8000
