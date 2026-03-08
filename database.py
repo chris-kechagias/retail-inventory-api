@@ -19,7 +19,7 @@ from config import config
 # The Engine is the 'source' of connectivity.
 # echo=True logs all generated SQL statements to the terminal—great for debugging!
 engine = create_engine(
-    f"postgresql://{config.db_username}:{config.db_password}@localhost:5432/retail_inventory_db",
+    f"postgresql://{config.db_username}:{config.db_password}@{config.db_host}:5432/retail_inventory_db",
     echo=True,
 )
 
