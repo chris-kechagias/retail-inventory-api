@@ -9,8 +9,8 @@ import logging
 from sqlmodel import func, select
 
 # Local/First-Party Imports
-from app.database import SessionDep
-from app.models import (
+from ..database import SessionDep
+from ..models import (
     Product,
     ProductVariant,
 )

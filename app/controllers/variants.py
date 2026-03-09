@@ -10,8 +10,8 @@ from typing import Optional
 from sqlmodel import select
 
 # Local/First-Party Imports
-from app.database import SessionDep
-from app.models import (
+from ..database import SessionDep
+from ..models import (
     ProductVariant,
     ProductVariantCreate,
     ProductVariantUpdate,
