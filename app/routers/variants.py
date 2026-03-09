@@ -5,9 +5,6 @@ Variant routes: API endpoints for managing product variants.
 # Standard Library Imports
 import logging
 
-# Local/First-Party Imports
-from database import SessionDep
-
 # Third-Party Imports
 from fastapi import APIRouter, status
 
@@ -18,12 +15,15 @@ from ..controllers import (
     get_product_variants_controller,
     update_product_variant_controller,
 )
+
+# Local/First-Party Imports
+from ..database import SessionDep
 from ..models import (
     ProductVariant,
     ProductVariantCreate,
     ProductVariantUpdate,
 )
-from ..utils.errors import (
+from ..utils import (
     ProductNotFoundException,
     ProductVariantNotFoundException,
 )
