@@ -59,8 +59,9 @@ def create_product_variant_controller(
     )
 
     # 1. Converts the Pydantic schema into a SQLModel Table instance
-    db_variant = ProductVariant.model_validate(variant)
-    db_variant.product_id = product_id
+    db_variant = ProductVariant.model_validate(
+        variant, update={"product_id": product_id}
+    )
     # 2. Add to session and commit to persist
     session.add(db_variant)
     session.commit()

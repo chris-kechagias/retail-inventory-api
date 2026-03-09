@@ -61,8 +61,9 @@ app = FastAPI(
 
 app.include_router(health_router)
 app.include_router(home_router)
+app.include_router(analytics_router)
 app.include_router(products_router)
 app.include_router(variants_router)
-app.include_router(analytics_router)
+
 app.add_exception_handler(AppException, app_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)

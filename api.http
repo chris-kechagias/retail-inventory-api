@@ -28,7 +28,7 @@ POST {{base}}/products
 Content-Type: application/json
 
 {
-  "category": "TEES",
+  "category": "Tees",
   "name": "Classic White Tee",
   "color": "WHITE",
   "price": 29.99,
@@ -41,7 +41,7 @@ POST {{base}}/products
 Content-Type: application/json
 
 {
-  "category": "SWEATERS",
+  "category": "Sweaters",
   "name": "Oversized Hoodie",
   "color": "BLACK",
   "price": 89.99,
@@ -54,7 +54,7 @@ POST {{base}}/products
 Content-Type: application/json
 
 {
-  "category": "PANTS",
+  "category": "Pants",
   "name": "Cargo Pants",
   "color": "OLIVE",
   "price": 119.99,
@@ -93,7 +93,7 @@ POST {{base}}/products/1/variants
 Content-Type: application/json
 
 {
-  "size": "S_M",
+  "size": "S-M",
   "quantity": 50,
   "in_stock": true
 }
@@ -103,7 +103,7 @@ POST {{base}}/products/1/variants
 Content-Type: application/json
 
 {
-  "size": "L_XL",
+  "size": "L-XL",
   "quantity": 30,
   "in_stock": true
 }
@@ -160,7 +160,7 @@ POST {{base}}/products
 Content-Type: application/json
 
 {
-  "category": "TEES",
+  "category": "Tees",
   "name": "Bad Product",
   "color": "BLACK",
   "price": -10,

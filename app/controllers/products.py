@@ -61,7 +61,7 @@ def create_product_controller(product: ProductCreate, session: SessionDep) -> Pr
         "Creating new product",
         extra={
             "category": product.category,
-            "name": product.name,
+            "product_name": product.name,
             "color": product.color,
             "price": product.price,
             "collection": product.collection,
@@ -95,7 +95,7 @@ def update_product_controller(
         extra={
             "product_id": product_id,
             "category": update_data.category,
-            "name": update_data.name,
+            "product_name": update_data.name,
             "color": update_data.color,
             "price": update_data.price,
             "collection": update_data.collection,
@@ -126,7 +126,7 @@ def update_product_controller(
         extra={
             "product_id": product_id,
             "category": db_product.category,
-            "name": db_product.name,
+            "product_name": db_product.name,
             "color": db_product.color,
             "price": db_product.price,
             "collection": db_product.collection,
