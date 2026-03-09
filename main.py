@@ -8,20 +8,26 @@ Creates the FastAPI app, registers routers, and manages the database lifespan.
 import logging
 from contextlib import asynccontextmanager
 
-# Local/First-Party Imports
-import logger_config  # noqa: F401
-from config import config
-from database import create_db_and_tables
-from exception_handlers import app_exception_handler, validation_exception_handler
-from exceptions import AppException, DatabaseException
-
 # Third-Party Imports
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 
-from health import router as health_router
-from home import router as home_router
-from products import router as products_router
+# Local/First-Party Imports
+from app.config import config
+from app.database import create_db_and_tables
+from app.middleware import (
+    app_exception_handler,
+    setup_logging,  # noqa: F401,
+    validation_exception_handler,
+)
+from app.routers import (
+    analytics_router,
+    health_router,
+    home_router,
+    products_router,
+    variants_router,
+)
+from app.utils.errors import AppException, DatabaseException
 
 logger = logging.getLogger(__name__)
 
@@ -56,5 +62,7 @@ app = FastAPI(
 app.include_router(health_router)
 app.include_router(home_router)
 app.include_router(products_router)
+app.include_router(variants_router)
+app.include_router(analytics_router)
 app.add_exception_handler(AppException, app_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
