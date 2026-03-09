@@ -10,12 +10,12 @@ with the PostgreSQL database.
 import logging
 from typing import Annotated
 
+# Local/First-Party Imports
+from config import config
+
 # Third-Party Imports
 from fastapi import Depends
 from sqlmodel import Session, SQLModel, create_engine
-
-# Local/First-Party Imports
-from config import config
 
 logger = logging.getLogger(__name__)
 
