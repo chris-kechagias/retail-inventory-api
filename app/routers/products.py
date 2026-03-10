@@ -26,7 +26,7 @@ from ..models import (
 )
 from ..utils.errors import ProductNotFoundException
 
-router = APIRouter()
+router = APIRouter(tags=["Products"])
 logger = logging.getLogger(__name__)
 
 
