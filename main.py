@@ -57,6 +57,7 @@ app = FastAPI(
     description="A robust FastAPI service for managing warehouse stock using PostgreSQL and SQLModel.",
     version=config.version,
     lifespan=lifespan,
+    swagger_ui_parameters={"docExpansion": "none"},
 )
 
 app.include_router(health_router)
