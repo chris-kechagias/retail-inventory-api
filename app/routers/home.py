@@ -4,10 +4,10 @@ from fastapi import APIRouter
 # Local/First-Party Imports
 from ..config import config
 
-router = APIRouter()
+router = APIRouter(tags=["System"])
 
 
-@router.get("/", tags=["System"])
+@router.get("/")
 def read_root():
     return {
         "message": config.app_name,

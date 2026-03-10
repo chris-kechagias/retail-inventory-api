@@ -13,7 +13,7 @@ from ..controllers import get_inventory_value_controller
 # Local/First-Party Imports
 from ..database import SessionDep
 
-router = APIRouter()
+router = APIRouter(tags=["Analytics"])
 logger = logging.getLogger(__name__)
 
 # ----------------------------------------------------

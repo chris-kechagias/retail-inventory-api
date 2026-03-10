@@ -28,7 +28,7 @@ from ..utils import (
     ProductVariantNotFoundException,
 )
 
-router = APIRouter()
+router = APIRouter(tags=["Variants"])
 logger = logging.getLogger(__name__)
 
 # ----------------------------------------------------
