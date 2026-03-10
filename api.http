@@ -1,0 +1,214 @@
+@base = http://localhost:8000
+
+### Health Check
+GET {{base}}/health
+
+### ═══════════════════════════════════════════════════════
+### ─── ANALYTICS ──────────────────────────────────────────
+### ═══════════════════════════════════════════════════════
+
+### 1. Get Total Inventory Value
+GET {{base}}/products/total_value
+
+### ═══════════════════════════════════════════════════════
+### ─── PRODUCTS ──────────────────────────────────────────
+### ═══════════════════════════════════════════════════════
+
+### 2. Get All Products
+GET {{base}}/products
+
+### 3. Get All Products - With Pagination
+GET {{base}}/products?offset=0&limit=10
+
+### 4. Get Product by ID
+GET {{base}}/products/1
+
+### 5. Create Product - Tee
+POST {{base}}/products
+Content-Type: application/json
+
+{
+  "category": "Tees",
+  "name": "Classic White Tee",
+  "color": "WHITE",
+  "price": 29.99,
+  "collection": "SS26",
+  "coming_soon": false
+}
+
+### 6. Create Product - Hoodie
+POST {{base}}/products
+Content-Type: application/json
+
+{
+  "category": "Sweaters",
+  "name": "Oversized Hoodie",
+  "color": "BLACK",
+  "price": 89.99,
+  "collection": "FW25",
+  "coming_soon": false
+}
+
+### 7. Create Product - Coming Soon
+POST {{base}}/products
+Content-Type: application/json
+
+{
+  "category": "Pants",
+  "name": "Cargo Pants",
+  "color": "OLIVE",
+  "price": 119.99,
+  "collection": "SS26",
+  "coming_soon": true
+}
+
+### 8. Update Product - Change Price
+PATCH {{base}}/products/1
+Content-Type: application/json
+
+{
+  "price": 24.99
+}
+
+### 9. Update Product - Mark as Coming Soon
+PATCH {{base}}/products/1
+Content-Type: application/json
+
+{
+  "coming_soon": true
+}
+
+### 10. Delete Product
+DELETE {{base}}/products/1
+
+### ═══════════════════════════════════════════════════════
+### ─── VARIANTS ───────────────────────────────────────────
+### ═══════════════════════════════════════════════════════
+
+### 11. Get All Variants for a Product
+GET {{base}}/products/1/variants
+
+### 12. Create Variant - S-M
+POST {{base}}/products/1/variants
+Content-Type: application/json
+
+{
+  "size": "S-M",
+  "quantity": 50,
+  "in_stock": true
+}
+
+### 13. Create Variant - L-XL
+POST {{base}}/products/1/variants
+Content-Type: application/json
+
+{
+  "size": "L-XL",
+  "quantity": 30,
+  "in_stock": true
+}
+
+### 14. Create Variant - One Size
+POST {{base}}/products/1/variants
+Content-Type: application/json
+
+{
+  "size": "OS",
+  "quantity": 0,
+  "in_stock": false
+}
+
+### 15. Update Variant - Restock
+PATCH {{base}}/products/1/variants/1
+Content-Type: application/json
+
+{
+  "quantity": 100,
+  "in_stock": true
+}
+
+### 16. Delete Variant
+DELETE {{base}}/products/1/variants/1
+
+### ═══════════════════════════════════════════════════════
+### ─── VALIDATION TESTS (all should return 422) ──────────
+### ═══════════════════════════════════════════════════════
+
+### 17. Create Product - Missing required fields
+POST {{base}}/products
+Content-Type: application/json
+
+{
+  "name": "Incomplete Product"
+}
+
+### 18. Create Product - Invalid category
+POST {{base}}/products
+Content-Type: application/json
+
+{
+  "category": "INVALID_CATEGORY",
+  "name": "Bad Product",
+  "color": "BLACK",
+  "price": 29.99,
+  "collection": "SS26",
+  "coming_soon": false
+}
+
+### 19. Create Product - Negative price
+POST {{base}}/products
+Content-Type: application/json
+
+{
+  "category": "Tees",
+  "name": "Bad Product",
+  "color": "BLACK",
+  "price": -10,
+  "collection": "SS26",
+  "coming_soon": false
+}
+
+### 20. Create Variant - Invalid size
+POST {{base}}/products/1/variants
+Content-Type: application/json
+
+{
+  "size": "XXXL",
+  "quantity": 10,
+  "in_stock": true
+}
+
+### ═══════════════════════════════════════════════════════
+### ─── ERROR HANDLING TESTS ─────────────────────────────
+### ═══════════════════════════════════════════════════════
+
+### 21. Get Non-existent Product (should return 404)
+GET {{base}}/products/9999
+
+### 22. Update Non-existent Product (should return 404)
+PATCH {{base}}/products/9999
+Content-Type: application/json
+
+{
+  "price": 9.99
+}
+
+### 23. Delete Non-existent Product (should return 404)
+DELETE {{base}}/products/9999
+
+### 24. Get Variants for Non-existent Product (should return 404)
+GET {{base}}/products/9999/variants
+
+### 25. Update Non-existent Variant (should return 404)
+PATCH {{base}}/products/1/variants/9999
+Content-Type: application/json
+
+{
+  "quantity": 10
+}
+
+### 26. Delete Non-existent Variant (should return 404)
+DELETE {{base}}/products/1/variants/9999
+
+### 27. Non-existent Route (should return 404)
+GET {{base}}/does-not-exist

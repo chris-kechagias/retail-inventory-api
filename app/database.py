@@ -15,7 +15,7 @@ from fastapi import Depends
 from sqlmodel import Session, SQLModel, create_engine
 
 # Local/First-Party Imports
-from config import config
+from .config import config
 
 logger = logging.getLogger(__name__)
 
