@@ -12,6 +12,8 @@ class Config(BaseSettings):
     db_username: str = ""
     db_password: str = ""
     db_host: str = "localhost"
+    db_port: int = 5432
+    db_name: str = "postgres"
     start_time: float = time.time()
 
     class Config:
