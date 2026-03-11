@@ -31,11 +31,26 @@ cd retail-inventory-api
 
 ### Environment variables
 
-Create a `.env` file in the project root:
+Copy `.env.example` to `.env` and fill in the values:
+
+```bash
+cp .env.example .env
+```
 
 ```env
+# Local Docker
 DB_USERNAME=your_db_user
 DB_PASSWORD=your_db_password
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=retail_inventory_db
+
+# Supabase (Cloud) — Transaction pooler
+# DB_USERNAME=postgres.<your-project-ref>
+# DB_PASSWORD=your_supabase_password
+# DB_HOST=aws-1-<region>.pooler.supabase.com
+# DB_PORT=6543
+# DB_NAME=postgres
 ```
 
 ### Option 1: Local (uv)
