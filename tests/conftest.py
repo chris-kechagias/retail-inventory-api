@@ -1,3 +1,6 @@
+# Standard Library Imports
+from contextlib import asynccontextmanager
+
 # Third-Party Imports
 import pytest
 from fastapi.testclient import TestClient
@@ -23,10 +26,16 @@ def session_fixture():
         SQLModel.metadata.drop_all(engine)
 
 
+@asynccontextmanager
+async def lifespan_override(app):
+    yield
+
+
 @pytest.fixture(name="client")
 def client_fixture(session):
     # override dependency, yield TestClient, clear override
     app.dependency_overrides[get_session] = lambda: session
-    with TestClient(app, lifespan="off") as client:
+    app.router.lifespan_context = lifespan_override
+    with TestClient(app) as client:
         yield client
     app.dependency_overrides.clear()
