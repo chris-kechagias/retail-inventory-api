@@ -6,7 +6,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?style=flat-square&logo=postgresql)
 ![Supabase](https://img.shields.io/badge/Supabase-Cloud%20DB-3ECF8E?style=flat-square&logo=supabase)
 ![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?style=flat-square&logo=docker)
-![pytest](https://img.shields.io/badge/pytest-29%20passed-brightgreen?style=flat-square&logo=pytest)
+![pytest](https://img.shields.io/badge/pytest-97%25%20coverage-brightgreen?style=flat-square&logo=pytest)
 
 ---
 
