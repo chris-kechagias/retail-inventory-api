@@ -349,7 +349,7 @@ def test_delete_variant_not_found(client):
     )
     assert create_product_response.status_code == 201
     product_id = create_product_response.json()["id"]
-    # Attempt to delete a non-existent variant 
+    # Attempt to delete a non-existent variant
     delete_variant_response = client.delete(
         f"/products/{product_id}/variants/9999"  # Assuming this variant ID does not exist
     )
