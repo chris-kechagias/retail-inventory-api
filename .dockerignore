@@ -4,3 +4,7 @@
 !uv.lock
 !main.py
 !app/
+
+tests/
+.coverage
+.pytest_cache/
