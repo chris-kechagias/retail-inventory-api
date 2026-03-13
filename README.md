@@ -122,7 +122,7 @@ Special thanks to [qquorum](https://github.com/qquorum), Senior Software Develop
 
 **Chris Kechagias**
 [![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github)](https://github.com/chris-kechagias)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/chris-kechagias)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/chkechagias)
 [![dev.to](https://img.shields.io/badge/dev.to-0A0A0A?style=flat-square&logo=devdotto)](https://dev.to/kris_k)
 [![Medium](https://img.shields.io/badge/Medium-000000?style=flat-square&logo=medium)](https://medium.com/@ck.chris.kechagias)
 
