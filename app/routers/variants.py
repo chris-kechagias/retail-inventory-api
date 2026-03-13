@@ -82,6 +82,9 @@ def update_product_variant_router(
     update_data: ProductVariantUpdate,
     session: SessionDep,
 ) -> ProductVariant:
+    product = get_product_controller(product_id, session)
+    if not product:
+        raise ProductNotFoundException(product_id)
     variant = update_product_variant_controller(variant_id, update_data, session)
     if not variant:
         raise ProductVariantNotFoundException(variant_id)
@@ -98,6 +101,9 @@ def delete_product_variant_router(
     variant_id: int,
     session: SessionDep,
 ) -> None:
+    product = get_product_controller(product_id, session)
+    if not product:
+        raise ProductNotFoundException(product_id)
     variant = delete_product_variant_controller(variant_id, session)
     if not variant:
         raise ProductVariantNotFoundException(variant_id)

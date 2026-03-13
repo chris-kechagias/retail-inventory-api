@@ -45,5 +45,9 @@ Thumbs.db
 logs/
 *.log
 
+# Testing
+.coverage
+.pytest_cache/
+
 # Temp files
 v2-playbook.md

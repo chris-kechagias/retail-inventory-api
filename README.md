@@ -2,10 +2,11 @@
 
 ![Python](https://img.shields.io/badge/Python-3.11%2B-blue?style=flat-square&logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?style=flat-square&logo=fastapi)
+![SQLModel](https://img.shields.io/badge/SQLModel-ORM-red?style=flat-square)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?style=flat-square&logo=postgresql)
 ![Supabase](https://img.shields.io/badge/Supabase-Cloud%20DB-3ECF8E?style=flat-square&logo=supabase)
-![SQLModel](https://img.shields.io/badge/SQLModel-ORM-red?style=flat-square)
 ![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?style=flat-square&logo=docker)
+![pytest](https://img.shields.io/badge/pytest-97%25%20coverage-brightgreen?style=flat-square&logo=pytest)
 
 ---
 
@@ -86,6 +87,17 @@ docker compose up --build
 ```
 
 The API will be available at http://localhost:8000.
+
+---
+
+## Testing
+
+Run the full test suite with:
+```bash
+uv run pytest -v
+```
+
+29 tests covering all endpoints: products, variants, analytics, and health check. Uses SQLite in-memory database — no external dependencies required.
 
 ---
 
