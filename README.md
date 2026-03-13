@@ -10,7 +10,7 @@
 
 ## Status
 
-![Uptime](https://img.shields.io/uptimerobot/ratio/m802546661?style=flat-square&label=uptime)
+![API](https://img.shields.io/badge/API-Live-success?style=flat-square)
 ![Render](https://img.shields.io/badge/Deployed%20on-Render-46E3B7?style=flat-square&logo=render)
 ![Version](https://img.shields.io/badge/version-0.0.0-blue?style=flat-square)
 ![Last Commit](https://img.shields.io/github/last-commit/chris-kechagias/retail-inventory-api?style=flat-square)
@@ -121,10 +121,10 @@ Special thanks to [qquorum](https://github.com/qquorum), Senior Software Develop
 ## Author
 
 **Chris Kechagias**
-[![GitHub](https://img.shields.io/badge/-181717?style=flat-square&logo=github)](https://github.com/chris-kechagias)
-[![LinkedIn](https://img.shields.io/badge/-0A66C2?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/chkechagias)
-[![dev.to](https://img.shields.io/badge/-0A0A0A?style=flat-square&logo=devdotto)](https://dev.to/kris_k)
-[![Medium](https://img.shields.io/badge/-000000?style=flat-square&logo=medium)](https://medium.com/@ck.chris.kechagias)
+[![GitHub](https://skillicons.dev/icons?i=github)](https://github.com/chris-kechagias)
+[![LinkedIn](https://skillicons.dev/icons?i=linkedin)](https://www.linkedin.com/in/chris-kechagias)
+[![dev.to](https://skillicons.dev/icons?i=devto)](https://dev.to/kris_k)
+[![Medium Badge](https://img.shields.io/badge/@ck.chris.kechagias-black?style=flat&logo=medium&logoColor=white&link=https://medium.com/@ck.chris.kechagias)](https://medium.com/@ck.chris.kechagias)
 
 
 *Transitioning from retail operations to AI engineering.*
