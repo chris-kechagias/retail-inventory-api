@@ -8,11 +8,22 @@
 ![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?style=flat-square&logo=docker)
 ![pytest](https://img.shields.io/badge/pytest-97%25%20coverage-brightgreen?style=flat-square&logo=pytest)
 
+## Status
+
+![Uptime](https://img.shields.io/uptimerobot/status/m802546661?style=flat-square&label=API%20Status&logo=render)
+![Render](https://img.shields.io/badge/Deployed%20on-Render-46E3B7?style=flat-square&logo=render)
+![Version](https://img.shields.io/badge/version-0.0.0-blue?style=flat-square)
+![Last Commit](https://img.shields.io/github/last-commit/chris-kechagias/retail-inventory-api?style=flat-square)
+![Commits](https://img.shields.io/github/commit-activity/m/chris-kechagias/retail-inventory-api?style=flat-square&label=Activity)
+![License](https://img.shields.io/github/license/chris-kechagias/retail-inventory-api?style=flat-square)
+
 ---
 
 ## About
 
 A REST API for managing retail product inventory and variants. Built with FastAPI, SQLModel, and PostgreSQL, with structured JSON logging, centralised exception handling, and Docker support.
+
+**Live API:** [retail-inventory-api-yati.onrender.com/docs](https://retail-inventory-api-yati.onrender.com/docs)
 
 ---
 
@@ -110,7 +121,11 @@ Special thanks to [qquorum](https://github.com/qquorum), Senior Software Develop
 ## Author
 
 **Chris Kechagias**
-[GitHub](https://github.com/chris-kechagias) | [LinkedIn](https://www.linkedin.com/in/chris-kechagias)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github)](https://github.com/chris-kechagias)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/chris-kechagias)
+[![dev.to](https://img.shields.io/badge/dev.to-0A0A0A?style=flat-square&logo=devdotto)](https://dev.to/kris_k)
+[![Medium](https://img.shields.io/badge/Medium-000000?style=flat-square&logo=medium)](https://medium.com/@ck.chris.kechagias)
+
 
 *Transitioning from retail operations to AI engineering.*
 
