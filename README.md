@@ -121,10 +121,12 @@ Special thanks to [qquorum](https://github.com/qquorum), Senior Software Develop
 ## Author
 
 **Chris Kechagias**
-[![GitHub](https://skillicons.dev/icons?i=github)](https://github.com/chris-kechagias)
-[![LinkedIn](https://skillicons.dev/icons?i=linkedin)](https://www.linkedin.com/in/chris-kechagias)
-[![dev.to](https://skillicons.dev/icons?i=devto)](https://dev.to/kris_k)
-[![Medium Badge](https://img.shields.io/badge/@ck.chris.kechagias-black?style=flat&logo=medium&logoColor=white&link=https://medium.com/@ck.chris.kechagias)](https://medium.com/@ck.chris.kechagias)
+
+[![Medium Badge](https://img.shields.io/badge/@ck.chris.kechagias-black?style=flat&logo=medium&logoColor=white&link=https://medium.com/@ck.chris.kechagias)](https://medium.com/@ck.chris.kechagias)<br>
+[![GitHub](https://skillicons.dev/icons?i=github)](https://github.com/chris-kechagias)<br>
+[![LinkedIn](https://skillicons.dev/icons?i=linkedin)](https://www.linkedin.com/in/chkechagias)<br>
+[![dev.to](https://skillicons.dev/icons?i=devto)](https://dev.to/kris_k)<br>
+
 
 
 *Transitioning from retail operations to AI engineering.*
