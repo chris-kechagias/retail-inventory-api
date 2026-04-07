@@ -20,6 +20,7 @@ from app.middleware import (
     setup_logging,  # noqa: F401,
     validation_exception_handler,
 )
+from app.middleware.security_headers import security_headers_middleware
 from app.routers import (
     analytics_router,
     health_router,
@@ -60,6 +61,7 @@ app = FastAPI(
     swagger_ui_parameters={"docExpansion": "none"},
 )
 
+app.middleware("http")(security_headers_middleware)
 app.include_router(health_router)
 app.include_router(home_router)
 app.include_router(analytics_router)
