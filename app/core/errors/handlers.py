@@ -11,26 +11,23 @@ from typing import Any, Dict
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from . import AppException, ValidationException
+from . import AppException, ErrorDetail, ErrorResponse, ValidationException
 
 logger = logging.getLogger(__name__)
 
 
 def create_error_response(exception: AppException) -> Dict[str, Any]:
     """Helper function to create a standardized error response from an AppException."""
-    response = {
-        "success": False,
-        "error": {
-            "code": exception.error_code,
-            "message": exception.message,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-        },
-    }
+    response = ErrorResponse(
+        error=ErrorDetail(
+            code=exception.error_code,
+            message=exception.message,
+            timestamp=datetime.now(timezone.utc),
+            details=exception.details,
+        )
+    )
 
-    if exception.details:
-        response["error"]["details"] = exception.details
-
-    return response
+    return response.model_dump(mode="json")
 
 
 async def app_exception_handler(request, exception: AppException):
@@ -50,6 +47,30 @@ async def app_exception_handler(request, exception: AppException):
     return JSONResponse(
         status_code=exception.status_code,
         content=create_error_response(exception),
+    )
+
+
+async def generic_exception_handler(request, exception: Exception):
+    """Catch-all handler for unexpected exceptions"""
+
+    # Log the error with context and return a generic JSONResponse
+    logger.error(
+        "Unexpected error",
+        exc_info=exception,
+        extra={
+            "path": request.url.path,
+            "method": request.method,
+        },
+    )
+    return JSONResponse(
+        status_code=500,
+        content=create_error_response(
+            AppException(
+                message="An unexpected error occurred",
+                status_code=500,
+                error_code="UNEXPECTED_ERROR",
+            )
+        ),
     )
 
 

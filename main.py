@@ -15,6 +15,7 @@ from app.core.errors import (
     AppException,
     DatabaseException,
     app_exception_handler,
+    generic_exception_handler,
     validation_exception_handler,
 )
 from app.middleware import security_headers_middleware
@@ -65,4 +66,5 @@ app.include_router(products_router)
 app.include_router(variants_router)
 
 app.add_exception_handler(AppException, app_exception_handler)
+app.add_exception_handler(Exception, generic_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)

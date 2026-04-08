@@ -7,7 +7,11 @@ from .exceptions import (
     ProductVariantNotFoundException,
     ValidationException,
 )
-from .handlers import app_exception_handler, validation_exception_handler
+from .handlers import (
+    app_exception_handler,
+    generic_exception_handler,
+    validation_exception_handler,
+)
 
 __all__ = [
     "AppException",
@@ -19,4 +23,5 @@ __all__ = [
     "ValidationException",
     "app_exception_handler",
     "validation_exception_handler",
+    "generic_exception_handler",
 ]
