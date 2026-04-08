@@ -1,14 +1,17 @@
-# Standard Library Imports
+"""
+Defines custom exception handlers for the FastAPI application,
+including handling for application-specific exceptions and validation errors.
+These handlers log the errors with relevant context and return standardized JSON responses to the client.
+"""
+
 import logging
 from datetime import datetime, timezone
 from typing import Any, Dict
 
-# Third-Party Imports
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-# Local/First-Party Imports
-from ..utils.errors import AppException, ValidationException
+from . import AppException, ValidationException
 
 logger = logging.getLogger(__name__)
 

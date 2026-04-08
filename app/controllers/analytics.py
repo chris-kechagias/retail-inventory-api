@@ -2,14 +2,11 @@
 Analytics controllers: Business logic for generating reports and insights from the inventory system.
 """
 
-# Standard Library Imports
 import logging
 
-# Third-Party Imports
 from sqlmodel import func, select
 
-# Local/First-Party Imports
-from ..database import SessionDep
+from ..core import SessionDep
 from ..models import (
     Product,
     ProductVariant,

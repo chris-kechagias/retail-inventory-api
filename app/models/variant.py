@@ -10,6 +10,8 @@ from sqlmodel import Field, SQLModel
 
 
 class Size(str, Enum):
+    """Predefined sizes for product variants."""
+
     S_M = "S-M"
     L_XL = "L-XL"
     OS = "OS"

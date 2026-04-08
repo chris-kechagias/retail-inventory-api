@@ -6,15 +6,12 @@ the dependency injection pattern used by the API endpoints to interact
 with the PostgreSQL database.
 """
 
-# Standard Library Imports
 import logging
 from typing import Annotated
 
-# Third-Party Imports
 from fastapi import Depends
 from sqlmodel import Session, SQLModel, create_engine
 
-# Local/First-Party Imports
 from .config import config
 
 logger = logging.getLogger(__name__)

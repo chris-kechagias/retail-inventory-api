@@ -29,6 +29,8 @@ class AppException(Exception):
 
 
 class ProductNotFoundException(AppException):
+    """Exception raised when a requested product is not found in the database."""
+
     def __init__(self, product_id: int):
         super().__init__(
             message=f"Product with ID {product_id} not found",
@@ -39,6 +41,8 @@ class ProductNotFoundException(AppException):
 
 
 class ProductVariantNotFoundException(AppException):
+    """Exception raised when a requested product variant is not found in the database."""
+
     def __init__(self, variant_id: int):
         super().__init__(
             message=f"Variant with ID {variant_id} not found",
@@ -49,6 +53,8 @@ class ProductVariantNotFoundException(AppException):
 
 
 class ValidationException(AppException):
+    """Exception raised for validation errors in request data."""
+
     def __init__(self, details: dict):
         super().__init__(
             message="Validation error",
@@ -59,6 +65,8 @@ class ValidationException(AppException):
 
 
 class DatabaseException(AppException):
+    """Exception raised for database-related errors."""
+
     def __init__(
         self, message: str = "Database error", details: Optional[Dict[str, Any]] = None
     ):
@@ -71,6 +79,8 @@ class DatabaseException(AppException):
 
 
 class ErrorDetail(BaseModel):
+    """Structured error detail for API responses."""
+
     code: str
     message: str
     timestamp: datetime
@@ -78,5 +88,7 @@ class ErrorDetail(BaseModel):
 
 
 class ErrorResponse(BaseModel):
+    """Standardized error response model for API responses."""
+
     success: bool = False
     error: ErrorDetail

@@ -2,10 +2,8 @@
 Variant routes: API endpoints for managing product variants.
 """
 
-# Standard Library Imports
 import logging
 
-# Third-Party Imports
 from fastapi import APIRouter, status
 
 from ..controllers import (
@@ -15,20 +13,18 @@ from ..controllers import (
     get_product_variants_controller,
     update_product_variant_controller,
 )
-
-# Local/First-Party Imports
-from ..database import SessionDep
+from ..core import SessionDep
+from ..core.errors import (
+    ProductNotFoundException,
+    ProductVariantNotFoundException,
+)
 from ..models import (
     ProductVariant,
     ProductVariantCreate,
     ProductVariantUpdate,
 )
-from ..utils import (
-    ProductNotFoundException,
-    ProductVariantNotFoundException,
-)
 
-router = APIRouter(tags=["Variants"])
+router = APIRouter(prefix="/products", tags=["Variants"])
 logger = logging.getLogger(__name__)
 
 # ----------------------------------------------------
@@ -37,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 @router.get(
-    "/products/{product_id}/variants",
+    "/{product_id}/variants",
     response_model=list[ProductVariant],
     summary="Get all variants for a product",
 )
@@ -57,7 +53,7 @@ def get_product_variants_router(
 
 
 @router.post(
-    "/products/{product_id}/variants",
+    "/{product_id}/variants",
     response_model=ProductVariant,
     status_code=status.HTTP_201_CREATED,
     summary="Add variants for an existing product",
@@ -72,7 +68,7 @@ def create_product_variant_router(
 
 
 @router.patch(
-    "/products/{product_id}/variants/{variant_id}",
+    "/{product_id}/variants/{variant_id}",
     response_model=ProductVariant,
     summary="Partial update of a product's variants",
 )
@@ -92,7 +88,7 @@ def update_product_variant_router(
 
 
 @router.delete(
-    "/products/{product_id}/variants/{variant_id}",
+    "/{product_id}/variants/{variant_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Remove a product's variants",
 )

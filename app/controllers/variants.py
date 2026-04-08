@@ -2,15 +2,12 @@
 Variant controllers: Business logic for managing product variants in the inventory system.
 """
 
-# Standard Library Imports
 import logging
 from typing import Optional
 
-# Third-Party Imports
 from sqlmodel import select
 
-# Local/First-Party Imports
-from ..database import SessionDep
+from ..core import SessionDep
 from ..models import (
     ProductVariant,
     ProductVariantCreate,
