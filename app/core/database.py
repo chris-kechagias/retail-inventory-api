@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 # echo=True logs all generated SQL statements to the terminal—great for debugging!
 engine = create_engine(
     f"postgresql://{config.db_username}:{config.db_password}@{config.db_host}:{config.db_port}/{config.db_name}",
-    echo=True,
+    echo=config.debug,
     connect_args={"sslmode": "prefer"},
 )
 
