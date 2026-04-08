@@ -1,11 +1,12 @@
-# Standard Library Imports
+"""
+Health routes: API endpoints for health checks and system status.
+"""
+
 import time
 
-# Third-Party Imports
 from fastapi import APIRouter
 
-# Local/First-Party Imports
-from ..config import config
+from ..core import config
 from ..models import HealthResponse
 
 router = APIRouter(tags=["System"])

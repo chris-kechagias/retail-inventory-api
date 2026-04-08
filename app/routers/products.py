@@ -2,31 +2,27 @@
 Product routes: API endpoints for creating, reading, updating and deleting products.
 """
 
-# Standard Library Imports
 import logging
 from typing import Annotated
 
-# Third-Party Imports
 from fastapi import APIRouter, Query, status
 
-from ..controllers.products import (
+from ..controllers import (
     create_product_controller,
     delete_product_controller,
     get_all_products_controller,
     get_product_controller,
     update_product_controller,
 )
-
-# Local/First-Party Imports
-from ..database import SessionDep
+from ..core import SessionDep
+from ..core.errors import ProductNotFoundException
 from ..models import (
     Product,
     ProductCreate,
     ProductUpdate,
 )
-from ..utils.errors import ProductNotFoundException
 
-router = APIRouter(tags=["Products"])
+router = APIRouter(prefix="/products", tags=["Products"])
 logger = logging.getLogger(__name__)
 
 
@@ -36,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 @router.get(
-    "/products",
+    "/",
     response_model=list[Product],
     summary="List all products with pagination",
 )
@@ -49,7 +45,7 @@ def get_all_products_router(
 
 
 @router.get(
-    "/products/{product_id}",
+    "/{product_id}",
     response_model=Product,
     summary="Get product by ID",
 )
@@ -66,7 +62,7 @@ def get_product_router(product_id: int, session: SessionDep) -> Product:
 
 
 @router.post(
-    "/products",
+    "/",
     response_model=Product,
     status_code=status.HTTP_201_CREATED,
     summary="Add a new product to the inventory",
@@ -76,7 +72,7 @@ def create_product_router(product: ProductCreate, session: SessionDep) -> Produc
 
 
 @router.patch(
-    "/products/{product_id}",
+    "/{product_id}",
     response_model=Product,
     summary="Partial update of a product",
 )
@@ -90,7 +86,7 @@ def update_product_router(
 
 
 @router.delete(
-    "/products/{product_id}",
+    "/{product_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Remove a product",
 )

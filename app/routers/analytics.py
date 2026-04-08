@@ -2,16 +2,12 @@
 Analytics routes: API endpoints for inventory analytics and reporting.
 """
 
-# Standard Library Imports
 import logging
 
-# Third-Party Imports
 from fastapi import APIRouter
 
 from ..controllers import get_inventory_value_controller
-
-# Local/First-Party Imports
-from ..database import SessionDep
+from ..core import SessionDep
 
 router = APIRouter(tags=["Analytics"])
 logger = logging.getLogger(__name__)

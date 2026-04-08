@@ -6,15 +6,12 @@ the dependency injection pattern used by the API endpoints to interact
 with the PostgreSQL database.
 """
 
-# Standard Library Imports
 import logging
 from typing import Annotated
 
-# Third-Party Imports
 from fastapi import Depends
 from sqlmodel import Session, SQLModel, create_engine
 
-# Local/First-Party Imports
 from .config import config
 
 logger = logging.getLogger(__name__)
@@ -23,7 +20,7 @@ logger = logging.getLogger(__name__)
 # echo=True logs all generated SQL statements to the terminal—great for debugging!
 engine = create_engine(
     f"postgresql://{config.db_username}:{config.db_password}@{config.db_host}:{config.db_port}/{config.db_name}",
-    echo=True,
+    echo=config.debug,
     connect_args={"sslmode": "prefer"},
 )
 

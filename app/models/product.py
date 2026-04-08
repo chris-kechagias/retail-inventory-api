@@ -29,6 +29,8 @@ class HealthResponse(SQLModel):
 
 
 class Category(str, Enum):
+    """Predefined product categories for inventory classification."""
+
     TEES = "Tees"
     SWEATERS = "Sweaters"
     SHIRTS = "Shirts"
@@ -60,6 +62,7 @@ class ProductBase(SQLModel):
     @field_validator("name")
     @classmethod
     def name_must_not_be_empty(cls, value):
+        """Validator to ensure that the product name is not an empty string."""
         if not value.strip():
             raise ValueError("Product name must not be empty.")
         return value.strip()
@@ -75,6 +78,7 @@ class ProductBase(SQLModel):
     @field_validator("color")
     @classmethod
     def color_must_not_be_empty(cls, value):
+        """Validator to ensure that the color is not an empty string if provided."""
         if value is not None and not value.strip():
             raise ValueError("Color must not be an empty string if provided.")
         return value.strip() if value is not None else None
@@ -92,6 +96,7 @@ class ProductBase(SQLModel):
     @field_validator("collection")
     @classmethod
     def collection_must_not_be_empty(cls, value):
+        """Validator to ensure that the collection is not an empty string if provided."""
         if value is not None and not value.strip():
             raise ValueError("Collection must not be an empty string if provided.")
         return value.strip() if value is not None else None

@@ -1,8 +1,10 @@
-# Third-Party Imports
+"""
+Home route: API endpoint for the root path, providing basic information about the API.
+"""
+
 from fastapi import APIRouter
 
-# Local/First-Party Imports
-from ..config import config
+from ..core import config
 
 router = APIRouter(tags=["System"])
 
