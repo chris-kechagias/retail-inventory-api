@@ -80,7 +80,10 @@ def create_product_controller(product: ProductCreate, session: SessionDep) -> Pr
     session.commit()
     session.refresh(db_product)
 
-    logger.info("Product created successfully", extra={"product_id": db_product.id, "sku": db_product.sku})
+    logger.info(
+        "Product created successfully",
+        extra={"product_id": db_product.id, "sku": db_product.sku},
+    )
 
     return db_product
 
