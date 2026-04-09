@@ -9,9 +9,8 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
+from app.core import get_session
 from main import app
-
-from ..app.core import get_session
 
 engine = create_engine(
     "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool

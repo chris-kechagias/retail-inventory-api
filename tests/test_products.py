@@ -131,7 +131,7 @@ def test_get_product_found(client):
 
 
 def test_get_product_not_found(client):
-    response = client.get("/products/999")  # Assuming this ID does not exist
+    response = client.get("/products/00000000-0000-0000-0000-000000000000")  # Assuming this ID does not exist
     assert response.status_code == 404
     data = response.json()
     assert data["error"]["code"] == "PRODUCT_NOT_FOUND"
@@ -202,7 +202,7 @@ def test_update_product_invalid_data(client):
 
 def test_update_product_not_found(client):
     update_response = client.patch(
-        "/products/9999",  # Assuming this ID does not exist
+        "/products/00000000-0000-0000-0000-000000000000",  # Assuming this ID does not exist
         json={
             "name": "Updated Garment",
             "price": 49.90,
@@ -241,7 +241,7 @@ def test_delete_product_success(client):
 
 
 def test_delete_product_not_found(client):
-    delete_response = client.delete("/products/9999")  # Assuming this ID does not exist
+    delete_response = client.delete("/products/00000000-0000-0000-0000-000000000000")  # Assuming this ID does not exist
     assert delete_response.status_code == 404
     data = delete_response.json()
     assert data["error"]["code"] == "PRODUCT_NOT_FOUND"

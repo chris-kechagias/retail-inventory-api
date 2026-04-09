@@ -101,7 +101,7 @@ def test_create_variant_product_invalid_quantity(client):
 def test_create_variant_product_not_found(client):
     # Attempt to create a variant for a non-existent product
     create_variant_response = client.post(
-        "/products/9999/variants/",  # Assuming this product ID does not exist
+        "/products/00000000-0000-0000-0000-000000000000/variants/",  # Assuming this product ID does not exist
         json={
             "size": "OS",
             "quantity": 10,
@@ -158,7 +158,7 @@ def test_get_variants(client):
 def test_get_variants_product_not_found(client):
     # Attempt to get variants for a non-existent product
     get_variants_response = client.get(
-        "/products/9999/variants/"
+        "/products/00000000-0000-0000-0000-000000000000/variants/"
     )  # Assuming this product ID does not exist
     assert get_variants_response.status_code == 404
     data = get_variants_response.json()
@@ -269,7 +269,7 @@ def test_update_variant_not_found(client):
 
     # Attempt to update a non-existent variant
     update_variant_response = client.patch(
-        f"/products/{product_id}/variants/9999",  # Assuming this variant ID does not exist
+        f"/products/{product_id}/variants/00000000-0000-0000-0000-000000000000",  # Assuming this variant ID does not exist
         json={
             "quantity": 5,
             "in_stock": False,
@@ -283,7 +283,7 @@ def test_update_variant_not_found(client):
 def test_update_variant_product_not_found(client):
     # Attempt to update a variant for a non-existent product
     update_variant_response = client.patch(
-        "/products/9999/variants/1",  # Assuming this product ID does not exist
+        "/products/00000000-0000-0000-0000-000000000000/variants/00000000-0000-0000-0000-000000000000",  # Assuming this product ID does not exist
         json={
             "quantity": 5,
             "in_stock": False,
@@ -351,7 +351,7 @@ def test_delete_variant_not_found(client):
     product_id = create_product_response.json()["id"]
     # Attempt to delete a non-existent variant
     delete_variant_response = client.delete(
-        f"/products/{product_id}/variants/9999"  # Assuming this variant ID does not exist
+        f"/products/{product_id}/variants/00000000-0000-0000-0000-000000000000"  # Assuming this variant ID does not exist
     )
     assert delete_variant_response.status_code == 404
     data = delete_variant_response.json()
@@ -361,7 +361,7 @@ def test_delete_variant_not_found(client):
 def test_delete_variant_product_not_found(client):
     # Attempt to delete a variant for a non-existent product
     delete_variant_response = client.delete(
-        "/products/9999/variants/1"  # Assuming this product ID does not exist
+        "/products/00000000-0000-0000-0000-000000000000/variants/00000000-0000-0000-0000-000000000000"  # Assuming this product ID does not exist
     )
     assert delete_variant_response.status_code == 404
     data = delete_variant_response.json()
