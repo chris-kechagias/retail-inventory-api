@@ -4,8 +4,9 @@ Product controllers: Business logic for managing products in the inventory syste
 
 import logging
 from typing import Optional
+from uuid import UUID
 
-from sqlmodel import select
+from sqlmodel import func, select
 
 from ..core import SessionDep
 from ..models import (
@@ -13,6 +14,7 @@ from ..models import (
     ProductCreate,
     ProductUpdate,
 )
+from ..utils import generate_sku
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +37,7 @@ def get_all_products_controller(
     return products
 
 
-def get_product_controller(product_id: int, session: SessionDep) -> Optional[Product]:
+def get_product_controller(product_id: UUID, session: SessionDep) -> Optional[Product]:
     """
     Fetches a single product record.
     """
@@ -65,20 +67,26 @@ def create_product_controller(product: ProductCreate, session: SessionDep) -> Pr
             "coming_soon": product.coming_soon,
         },
     )
-    # 1. Converts the Pydantic schema into a SQLModel Table instance
-    db_product = Product.model_validate(product)
+    # Count existing products in this category to generate the next sequential SKU
+    category_count = session.exec(
+        select(func.count()).where(Product.category == product.category)
+    ).one()
+    sku = generate_sku(product.category, category_count + 1)
+
+    # 1. Converts the Pydantic schema into a SQLModel Table instance, injecting the SKU
+    db_product = Product.model_validate(product, update={"sku": sku})
     # 2. Add to session and commit to persist
     session.add(db_product)
     session.commit()
-    session.refresh(db_product)  # Syncs db_product with the DB-generated ID
+    session.refresh(db_product)
 
-    logger.info("Product created successfully", extra={"product_id": db_product.id})
+    logger.info("Product created successfully", extra={"product_id": db_product.id, "sku": db_product.sku})
 
     return db_product
 
 
 def update_product_controller(
-    product_id: int, update_data: ProductUpdate, session: SessionDep
+    product_id: UUID, update_data: ProductUpdate, session: SessionDep
 ) -> Product:
     """
     Updates specific fields of an existing product.
@@ -135,7 +143,7 @@ def update_product_controller(
 
 
 def delete_product_controller(
-    product_id: int, session: SessionDep
+    product_id: UUID, session: SessionDep
 ) -> Optional[Product]:
     """
     Deletes a product from the database.

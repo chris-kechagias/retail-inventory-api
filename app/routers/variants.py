@@ -3,6 +3,7 @@ Variant routes: API endpoints for managing product variants.
 """
 
 import logging
+from uuid import UUID
 
 from fastapi import APIRouter, status
 
@@ -38,7 +39,7 @@ logger = logging.getLogger(__name__)
     summary="Get all variants for a product",
 )
 def get_product_variants_router(
-    product_id: int,
+    product_id: UUID,
     session: SessionDep,
 ) -> list[ProductVariant]:
     product = get_product_controller(product_id, session)
@@ -59,7 +60,7 @@ def get_product_variants_router(
     summary="Add variants for an existing product",
 )
 def create_product_variant_router(
-    product_id: int, variant: ProductVariantCreate, session: SessionDep
+    product_id: UUID, variant: ProductVariantCreate, session: SessionDep
 ) -> ProductVariant:
     product = get_product_controller(product_id, session)
     if not product:
@@ -73,8 +74,8 @@ def create_product_variant_router(
     summary="Partial update of a product's variants",
 )
 def update_product_variant_router(
-    product_id: int,
-    variant_id: int,
+    product_id: UUID,
+    variant_id: UUID,
     update_data: ProductVariantUpdate,
     session: SessionDep,
 ) -> ProductVariant:
@@ -93,8 +94,8 @@ def update_product_variant_router(
     summary="Remove a product's variants",
 )
 def delete_product_variant_router(
-    product_id: int,
-    variant_id: int,
+    product_id: UUID,
+    variant_id: UUID,
     session: SessionDep,
 ) -> None:
     product = get_product_controller(product_id, session)

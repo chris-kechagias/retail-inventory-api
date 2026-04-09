@@ -4,6 +4,7 @@ Product routes: API endpoints for creating, reading, updating and deleting produ
 
 import logging
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Query, status
 
@@ -49,7 +50,7 @@ def get_all_products_router(
     response_model=Product,
     summary="Get product by ID",
 )
-def get_product_router(product_id: int, session: SessionDep) -> Product:
+def get_product_router(product_id: UUID, session: SessionDep) -> Product:
     product = get_product_controller(product_id, session)
     if not product:
         raise ProductNotFoundException(product_id)
@@ -77,7 +78,7 @@ def create_product_router(product: ProductCreate, session: SessionDep) -> Produc
     summary="Partial update of a product",
 )
 def update_product_router(
-    product_id: int, update_data: ProductUpdate, session: SessionDep
+    product_id: UUID, update_data: ProductUpdate, session: SessionDep
 ) -> Product:
     product = get_product_controller(product_id, session)
     if not product:
@@ -90,7 +91,7 @@ def update_product_router(
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Remove a product",
 )
-def delete_product_router(product_id: int, session: SessionDep) -> None:
+def delete_product_router(product_id: UUID, session: SessionDep) -> None:
     product = get_product_controller(product_id, session)
     if not product:
         raise ProductNotFoundException(product_id)
