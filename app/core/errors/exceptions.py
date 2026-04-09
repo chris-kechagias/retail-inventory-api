@@ -7,6 +7,7 @@ Each exception includes a message, HTTP status code, error code, and optional de
 
 from datetime import datetime
 from typing import Any, Dict, Optional
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -31,7 +32,7 @@ class AppException(Exception):
 class ProductNotFoundException(AppException):
     """Exception raised when a requested product is not found in the database."""
 
-    def __init__(self, product_id: int):
+    def __init__(self, product_id: UUID):
         super().__init__(
             message=f"Product with ID {product_id} not found",
             status_code=404,
@@ -43,7 +44,7 @@ class ProductNotFoundException(AppException):
 class ProductVariantNotFoundException(AppException):
     """Exception raised when a requested product variant is not found in the database."""
 
-    def __init__(self, variant_id: int):
+    def __init__(self, variant_id: UUID):
         super().__init__(
             message=f"Variant with ID {variant_id} not found",
             status_code=404,
