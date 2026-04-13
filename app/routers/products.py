@@ -47,6 +47,15 @@ def get_all_products_router(
 
 
 @router.get(
+    "/search",
+    response_model=list[Product],
+    summary="Search products by name or SKU",
+)
+def get_searchable_products_router(q: str, session: SessionDep):
+    return get_searchable_products_controller(q, session)
+
+
+@router.get(
     "/{product_id}",
     response_model=Product,
     summary="Get product by ID",
@@ -56,15 +65,6 @@ def get_product_router(product_id: UUID, session: SessionDep) -> Product:
     if not product:
         raise ProductNotFoundException(product_id)
     return product
-
-
-@router.get(
-    "/search",
-    response_model=list[Product],
-    summary="Search products by name or SKU",
-)
-def get_searchable_products_router(q: str, session: SessionDep):
-    return get_searchable_products_controller(q, session)
 
 
 # ----------------------------------------------------
