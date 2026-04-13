@@ -13,6 +13,7 @@ from ..controllers import (
     delete_product_controller,
     get_all_products_controller,
     get_product_controller,
+    get_searchable_products_controller,
     update_product_controller,
 )
 from ..core import SessionDep
@@ -43,6 +44,15 @@ def get_all_products_router(
     limit: Annotated[int, Query(le=100)] = 100,
 ):
     return get_all_products_controller(session, offset, limit)
+
+
+@router.get(
+    "/search",
+    response_model=list[Product],
+    summary="Search products by name or SKU",
+)
+def get_searchable_products_router(q: str, session: SessionDep):
+    return get_searchable_products_controller(q, session)
 
 
 @router.get(

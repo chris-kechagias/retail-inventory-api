@@ -4,6 +4,7 @@ from .products import (
     delete_product_controller,
     get_all_products_controller,
     get_product_controller,
+    get_searchable_products_controller,
     update_product_controller,
 )
 from .variants import (
@@ -18,6 +19,7 @@ __all__ = [
     "create_product_controller",
     "delete_product_controller",
     "get_all_products_controller",
+    "get_searchable_products_controller",
     "get_product_controller",
     "update_product_controller",
     "create_product_variant_controller",
