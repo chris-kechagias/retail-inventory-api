@@ -13,6 +13,7 @@ from ..controllers import (
     delete_product_controller,
     get_all_products_controller,
     get_product_controller,
+    get_searchable_products_controller,
     update_product_controller,
 )
 from ..core import SessionDep
@@ -55,6 +56,15 @@ def get_product_router(product_id: UUID, session: SessionDep) -> Product:
     if not product:
         raise ProductNotFoundException(product_id)
     return product
+
+
+@router.get(
+    "/search",
+    response_model=list[Product],
+    summary="Search products by name or SKU",
+)
+def get_searchable_products_router(q: str, session: SessionDep):
+    return get_searchable_products_controller(q, session)
 
 
 # ----------------------------------------------------
