@@ -53,7 +53,8 @@ def get_searchable_products_controller(q: str, session: SessionDep):
     if sku_searchable(q):
         # Exact match on sku column
         logger.info("Performing SKU search", extra={"query": q})
-        return session.exec(select(Product).where(Product.sku == q.upper())).first()
+        product = session.exec(select(Product).where(Product.sku == q.upper())).first()
+        return [product] if product else []
     else:
         # TODO: semantic search - RAG (vector Database)
         logger.info("Performing name search", extra={"query": q})
