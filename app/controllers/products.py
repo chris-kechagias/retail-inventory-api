@@ -3,6 +3,7 @@ Product controllers: Business logic for managing products in the inventory syste
 """
 
 import logging
+import re
 from typing import Optional
 from uuid import UUID
 
@@ -35,6 +36,29 @@ def get_all_products_controller(
     products = session.exec(statement).all()
     logger.info("Products retrieved successfully", extra={"count": len(products)})
     return products
+
+
+def sku_searchable(q: str) -> bool:
+    """
+    Validates if the search query is a valid SKU format.
+    """
+    pattern = r"^[A-Za-z]{2}-\d{4}$"
+    return bool(re.match(pattern, q.strip()))
+
+
+def get_searchable_products_controller(q: str, session: SessionDep):
+    """
+    Retrieves products based on a search query.
+    """
+    if sku_searchable(q):
+        # Exact match on sku column
+        logger.info("Performing SKU search", extra={"query": q})
+        return session.exec(select(Product).where(Product.sku == q.upper())).first()
+    else:
+        # TODO: semantic search - RAG (vector Database)
+        logger.info("Performing name search", extra={"query": q})
+        statement = select(Product).where(Product.name.ilike(f"%{q}%"))
+        return session.exec(statement).all()
 
 
 def get_product_controller(product_id: UUID, session: SessionDep) -> Optional[Product]:
