@@ -1,4 +1,4 @@
-def test_health():
+def test_health(client):
     """Test health check endpoint for status, version, and uptime."""
     response = client.get("/health")
     assert response.status_code == 200
