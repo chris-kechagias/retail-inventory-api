@@ -1,12 +1,3 @@
-# Third-Party Imports
-from fastapi.testclient import TestClient
-
-# Local/First-Party Imports
-from main import app
-
-client = TestClient(app)
-
-
 def test_health():
     """Test health check endpoint for status, version, and uptime."""
     response = client.get("/health")
